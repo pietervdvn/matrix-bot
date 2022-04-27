@@ -1,0 +1,3 @@
+[submodule "MapComplete"]
+	path = MapComplete
+	url = git@github.com:pietervdvn/MapComplete

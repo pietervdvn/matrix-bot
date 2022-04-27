@@ -1,33 +1,34 @@
 {
-  "name": "matrix-bot-sdk-bot-template",
-  "version": "0.1.0",
-  "author": "TravisR",
+  "name": "matrix-bot",
+  "version": "0.0.1",
+  "author": "Pietervdvn",
   "license": "Apache-2.0",
-  "description": "A template repository for bots made with the matrix-bot-sdk",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/turt2live/matrix-bot-sdk-bot-template.git"
-  },
+  "description": "Experimenting with matrix-bot",
+  "repository": "https://github.com/pietervdvn/matrix-bot",
   "bugs": {
-    "url": "https://github.com/turt2live/matrix-bot-sdk-bot-template/issues"
+    "url": "https://github.com/pietervdvn/matrix-bot/issues"
   },
-  "homepage": "https://github.com/turt2live/matrix-bot-sdk-bot-template#readme",
   "keywords": [
     "matrix",
-    "bot",
-    "template"
+    "bot"
   ],
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
     "lint": "tslint --project ./tsconfig.json -t stylish",
-    "start:dev": "npm run build && node lib/index.js"
+    "start": "ts-node src/index.ts"
   },
   "dependencies": {
     "config": "^3.3.6",
     "escape-html": "^1.0.3",
+    "fake-dom": "^1.0.4",
+    "https": "^1.0.0",
     "js-yaml": "^4.1.0",
-    "matrix-bot-sdk": "^0.6.0-beta.4"
+    "latlon2country": "^1.2.6",
+    "matrix-bot-sdk": "^0.6.0-beta.7",
+    "osmtogeojson": "^3.0.0-beta.4",
+    "ts-node": "^10.7.0",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/node": "^14.18.5",

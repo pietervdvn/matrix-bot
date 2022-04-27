@@ -17,6 +17,4 @@ COPY --from=builder /src/config /bot/config
 
 RUN npm ci
 
-VOLUME /bot/config
-
-CMD ["node", "lib/index.js"]
+CMD ["node", "lib/index.js", "syt_cGlldGVydmR2bi1ib3Q_zAZiEvYcpsdpNcgnYZJN_3AFUFY"]
