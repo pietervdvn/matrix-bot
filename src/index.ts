@@ -11,11 +11,12 @@ import {Command, ResponseSender} from "./command";
 import {InfoCommand} from "./infoCommand";
 import {HelpCommand} from "./helpCommand";
 import * as fakedom from "fake-dom"
-import {LayerDocumentationCommand} from "./layerDocumentationCommand";
+import {DocumentationCommand} from "./documentationCommand";
 import {SetLanguageCommand} from "./SetLanguageCommand";
 import {CountryCoder} from "latlon2country";
 import Constants from "../MapComplete/Models/Constants";
-import {DmCommand} from "./dmCommand";
+import {OsmConnection} from "../MapComplete/Logic/Osm/OsmConnection";
+import {UIEventSource} from "../MapComplete/Logic/UIEventSource";
 
 class MessageHandler {
 
@@ -126,10 +127,10 @@ Utils.download = (url, headers?: any): Promise<any> => {
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
     console.log("Starting matrix bot")
-   
+ 
     const homeserverUrl = "https://matrix.org";
     if (options.accessToken === undefined) {
-    	console.log("Logging in using username and password")
+    	console.log("Logging in using username and password...")
         const auth = new MatrixAuth(homeserverUrl);
         let cl = await auth.passwordLogin(options.username, options.password);
         options.accessToken = await cl.accessToken
@@ -145,9 +146,8 @@ async function main(options: { accessToken?: string, username?: string, password
 
     let allCommands: Command<any>[] = [
         new InfoCommand(countrycoder),
-        new LayerDocumentationCommand(),
-        new SetLanguageCommand(),
-        new DmCommand()
+        new DocumentationCommand(),
+        new SetLanguageCommand()
     ]
     allCommands.push(new HelpCommand(allCommands))
     const handler = new MessageHandler(client, allCommands)
@@ -162,7 +162,12 @@ async function main(options: { accessToken?: string, username?: string, password
 
     client.on("room.joined", async (roomid, event) => {
         console.log("Joined room", roomid)
+        await client.sendMessage(roomid, {
+            msgtype: "m.text",
+            body: "Hi! I'm MapComplete-bot - a computer program that responds to some commands. To see a list of possible commands, just say 'help'",
+        })
     })
+    
     
     
     
