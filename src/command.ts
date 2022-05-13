@@ -104,17 +104,30 @@ export class ResponseSender {
     }
 }
 
+export interface CommandOptions {
+    adminOnly?: false | boolean
+}
+
 export abstract class Command<T> {
     public cmd: string;
     public documentation: string;
     public args: T;
+    private _options: CommandOptions;
 
-    constructor(cmd: string, documentation: string, args: T) {
+    constructor(cmd: string, documentation: string, args: T, options?: CommandOptions) {
         this.cmd = cmd;
         this.documentation = documentation;
         this.args = args;
+        this._options = options;
     }
 
-    public abstract Run(r: ResponseSender, args: T & {_: string}): Promise<any>;
+    protected abstract Run(r: ResponseSender, args: T & {_: string}): Promise<any>;
 
+    async RunCommand(r: ResponseSender, argsObj: T & {_: string}):Promise<string | undefined> {
+        if(this._options?.adminOnly && !r.isAdmin){
+            r.sendNotice("This command is only available to administrators")
+            return
+        }
+        return this.Run(r, argsObj)
+    }
 }
