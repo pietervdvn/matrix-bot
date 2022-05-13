@@ -8,7 +8,7 @@
     "moduleResolution": "node",
     "target": "es2015",
     "noImplicitAny": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "outDir": "./lib",
     "types": [
       "node"
