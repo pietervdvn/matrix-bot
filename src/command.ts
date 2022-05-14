@@ -78,7 +78,7 @@ export class ResponseSender {
 
     public async sendHtml(msg): Promise<void>{
     	if(msg.length > 16384){
-    		msg = "response too long"
+    		msg = "Sorry, I couldn't generate a response as I wanted to say to much."
     	}
         this.cleanPrevious(this.client.sendMessage(this.roomId, {
             msgtype: "m.text",

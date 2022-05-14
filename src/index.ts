@@ -199,6 +199,15 @@ async function main(options: { accessToken?: string, username?: string, password
     }
 }
 
+function mainSync(options){
+    try{
+        main(options).catch(e => {
+            console.log("CRITICAL ASYNC ERROR", e)
+        })
+    }catch (e) {
+        console.log("CRITICAL ERROR: ", e)
+    }
+}
 
 if (fakedom === undefined || window === undefined) {
     console.log("FakeDom not initialized")
@@ -207,7 +216,7 @@ if (fakedom === undefined || window === undefined) {
 
 const [command, username, password] = process.argv.slice(2)
 if (command === "--password") {
-    main({password, username})
+    mainSync({password, username})
 } else {
-    main({accessToken: command});
+    mainSync({accessToken: command});
 }
