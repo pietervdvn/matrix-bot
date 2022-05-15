@@ -18,6 +18,7 @@ import Constants from "../MapComplete/Models/Constants";
 import {QuitCommand} from "./quitCommand";
 import DreamCommand from "./dreamCommand";
 import Combine from "../MapComplete/UI/Base/Combine";
+import SchemeCommand from "./schemeCommand";
 
 class MessageHandler {
 
@@ -69,9 +70,9 @@ class MessageHandler {
                 } catch (e) {
                     const msg = "Sorry, something went wrong while executing command " + key
                     if (r.isAdmin) {
-                        r.sendNotice(msg + "\n\nThe error is: <code>" + e.message + "</code>")
+                       await  r.sendNotice(msg + "\n\nThe error is: <code>" + e.message + "</code>")
                     } else {
-                        r.sendNotice(msg)
+                        await r.sendNotice(msg)
                     }
                     console.error(e)
                 }
@@ -155,6 +156,7 @@ async function main(options: { accessToken?: string, username?: string, password
         new InfoCommand(countrycoder),
         new DocumentationCommand(),
         new SetLanguageCommand(),
+        new SchemeCommand(),
         new DreamCommand(),
         new QuitCommand()
     ]

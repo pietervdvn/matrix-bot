@@ -16,10 +16,12 @@
   "scripts": {
     "build": "tsc",
     "lint": "tslint --project ./tsconfig.json -t stylish",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts syt_cGlldGVydmR2bi1ib3Q_YTQEpiWJMQFZBnpMwJMr_2Zvv9f"
   },
   "dependencies": {
+    "@types/showdown": "^2.0.0",
     "config": "^3.3.6",
+    "doctest-ts-improved": "^0.8.6",
     "escape-html": "^1.0.3",
     "fake-dom": "^1.0.4",
     "https": "^1.0.0",
@@ -27,6 +29,7 @@
     "latlon2country": "^1.2.6",
     "matrix-bot-sdk": "^0.6.0-beta.7",
     "osmtogeojson": "^3.0.0-beta.4",
+    "showdown": "^2.1.0",
     "ts-node": "^10.7.0",
     "xml2js": "^0.4.23"
   },

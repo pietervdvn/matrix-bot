@@ -80,7 +80,7 @@ export class ResponseSender {
     	if(msg.length > 16384){
     		msg = "Sorry, I couldn't generate a response as I wanted to say to much."
     	}
-        this.cleanPrevious(this.client.sendMessage(this.roomId, {
+        await this.cleanPrevious(this.client.sendMessage(this.roomId, {
             msgtype: "m.text",
             format: "org.matrix.custom.html",
             body: msg,
