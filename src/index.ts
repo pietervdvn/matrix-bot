@@ -20,6 +20,24 @@ import DreamCommand from "./dreamCommand";
 import Combine from "../MapComplete/UI/Base/Combine";
 import SchemeCommand from "./schemeCommand";
 
+interface MessageEvent {
+    "content": {
+        "body": string,
+        "format": "org.matrix.custom.html",
+        "formatted_body": string,
+        "msgtype": "m.text"
+    },
+    /**
+     * Linux timestamp in milliseconds
+     */
+    "origin_server_ts": number,
+    "sender": string,
+    "type": "m.room.message",
+    "unsigned": { "age": number, "transaction_id": string },
+    "event_id": string
+}
+
+
 class MessageHandler {
 
     private readonly _client: MatrixClient;
@@ -30,25 +48,34 @@ class MessageHandler {
         this._commands = commands;
     }
 
-    public async handle_message(roomId, event): Promise<string | undefined> {
+    public async handle_message(roomId, event: MessageEvent): Promise<string | undefined> {
         if (!event["content"]) return;
+        const oneHourAgo = (new Date().getTime()) - (60 * 60 * 1000);
+        if(event.origin_server_ts < oneHourAgo) {
+            console.log("Skip old message...")
+            // This message is older then one hour - we ignore it
+            return;
+        }
         const botId = await this._client.getUserId();
         const sender = event["sender"];
 
         if (sender === botId) {
             return
         }
-        let body = event["content"]["body"];
+        let body = event.content.body;
+        if(body === undefined){
+            return
+        }
         const isDm = this._client.dms.isDm(roomId)
-            const prefixes = ["!", botId + ": ", botId + ": ", "MapComplete-bot: ", "MapComplete-bot:"]
+        const prefixes = ["!", botId + ": ", botId + ": ", "MapComplete-bot: ", "MapComplete-bot:"]
         if (isDm) {
             prefixes.push("")
         }
-            const matchingPrefix = prefixes.find(prefix => body.startsWith(prefix))
-            if (matchingPrefix === undefined) {
-                return;
-            }
-            body = body.substring(matchingPrefix.length)
+        const matchingPrefix = prefixes.find(prefix => body.startsWith(prefix))
+        if (matchingPrefix === undefined) {
+            return;
+        }
+        body = body.substring(matchingPrefix.length)
         console.log(`${roomId}: ${sender} says '${body}'`);
         const r = new ResponseSender(this._client, roomId, sender);
 
@@ -70,7 +97,7 @@ class MessageHandler {
                 } catch (e) {
                     const msg = "Sorry, something went wrong while executing command " + key
                     if (r.isAdmin) {
-                       await  r.sendNotice(msg + "\n\nThe error is: <code>" + e.message + "</code>")
+                        await r.sendNotice(msg + "\n\nThe error is: <code>" + e.message + "</code>")
                     } else {
                         await r.sendNotice(msg)
                     }
@@ -164,7 +191,13 @@ async function main(options: { accessToken?: string, username?: string, password
     const handler = new MessageHandler(client, allCommands)
 
     client.on("room.failed_decryption", async (roomId: string, event: any, e: Error) => {
-        console.error(`Failed to decrypt ${roomId} ${event['event_id']} because `, e);
+        const oneHourAgo = (new Date().getTime()) - (60 * 1000);
+        if(event.origin_server_ts < oneHourAgo) {
+            console.log("Skip old unencryptable message...")
+            // This message is older then one hour - we ignore it
+            return;
+        }
+        console.error(`Failed to decrypt ${roomId} ${event['event_id']} ${new Date(event.origin_server_ts ).toISOString()} (which is fresher then ${new Date(oneHourAgo).toISOString()}) because `, e);
         await client.sendMessage(roomId, {
             "msgtype": "m.notice",
             "body": "Sorry, we don't support encryption yet",
@@ -187,7 +220,7 @@ async function main(options: { accessToken?: string, username?: string, password
                 client.stop()
             }
         } catch (e) {
-            console.error("Could not handle a room message...")
+            console.error("Could not handle a room message: ", e)
         }
     });
 
@@ -201,12 +234,12 @@ async function main(options: { accessToken?: string, username?: string, password
     }
 }
 
-function mainSync(options){
-    try{
+function mainSync(options) {
+    try {
         main(options).catch(e => {
             console.log("CRITICAL ASYNC ERROR", e)
         })
-    }catch (e) {
+    } catch (e) {
         console.log("CRITICAL ERROR: ", e)
     }
 }

@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "tslint --project ./tsconfig.json -t stylish",
-    "start": "ts-node src/index.ts syt_cGlldGVydmR2bi1ib3Q_YTQEpiWJMQFZBnpMwJMr_2Zvv9f"
+    "start": "ts-node src/index.ts"
   },
   "dependencies": {
     "@types/showdown": "^2.0.0",
