@@ -234,8 +234,6 @@ async function main(options: { accessToken?: string, username?: string, password
 
         await client.start();
         console.log("Started! This bot is called ", await client.getUserId())
-        const dm = await client.dms.getOrCreateDm("@pietervdvn:matrix.org")
-        await new ResponseSender(client, dm, "@pietervdvn-bot:matrix.org").sendNotice("Hi! I just booted! My time is "+new Date().toISOString()+", I'm version "+version)
     } catch (e) {
         console.error("Starting bot failed...")
     }
