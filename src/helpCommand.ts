@@ -7,15 +7,17 @@ import Constants from "../MapComplete/Models/Constants";
 import List from "../MapComplete/UI/Base/List";
 
 export class HelpCommand extends Command<{ cmd?: string }> {
-    private _allCommands: Command<any>[];
+    private readonly _allCommands: Command<any>[];
+    private readonly _version: string;
 
-    constructor(allCommands: Command<any>[]) {
+    constructor(version: string, allCommands: Command<any>[]) {
         super("help", "Prints info about supported commands",
             {
                 "cmd": "The command you want more information about"
             }
         );
         this._allCommands = allCommands;
+        this._version = version;
     }
 
     async Run(r: ResponseSender, args) {
@@ -45,11 +47,13 @@ export class HelpCommand extends Command<{ cmd?: string }> {
         
         const cmds: Command<any>[] = this._allCommands.filter(c => r.isAdmin || !c.options?.adminOnly)
         await r.sendElement(
-            new Combine(["Hi! I'm MapComplete-bot (built upon MapComplete "+Constants.vNumber+").",
+            new Combine(["Hi! I'm MapComplete-bot "+this._version+"(built upon MapComplete "+Constants.vNumber+").",
             "Send a command to me and I'll answer with something useful: give me a command via a private message or put <code>!</code> before the command in a public room.",
                 "My supported commands are:",
-                new List(cmds.map(cmd => new Combine([
-                    cmd.cmd, ": ", cmd.documentation
+                new List(cmds
+                    .filter(cmd => cmd.mayExecute(r))
+                    .map(cmd => new Combine([
+                    "<b>"+cmd.cmd+"</b>", ": ", cmd.documentation
                 ])))
             ]).SetClass("flex flex-col"))
     }

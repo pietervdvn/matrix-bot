@@ -7,8 +7,14 @@ export interface RoomSettings {
 export class RoomSettingsTracker {
     
     private static readonly _settings = new Map<string, RoomSettings>();
-    
-    
+    public static readonly roles =RoomSettingsTracker.defaultRoles();
+
+    private static defaultRoles(): Map<string, Set<string>>{
+      const roles =  new Map<string, Set<string>>();
+      roles.set("@pietervdvn:matrix.org",new Set(["Admin"]));
+      return roles;
+    }
+
     public static settingsFor(roomId: string):RoomSettings{
         let v = RoomSettingsTracker._settings.get(roomId)
         if(v === undefined){

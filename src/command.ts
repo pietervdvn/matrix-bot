@@ -2,6 +2,7 @@ import {MatrixClient} from "matrix-bot-sdk";
 import BaseUIElement from "../MapComplete/UI/BaseUIElement";
 import Locale from "../MapComplete/UI/i18n/Locale";
 import {RoomSettingsTracker} from "./RoomSettings";
+import {ALL} from "dns";
 
 
 export class ResponseSender {
@@ -132,6 +133,7 @@ export class ResponseSender {
             await this.client.redactEvent(this.roomId, previous, "Cleaning up...")
         }
     }
+
 }
 
 export interface CommandOptions {
@@ -149,11 +151,19 @@ export abstract class Command<T> {
         this.documentation = documentation;
         this.args = args;
         this.options = options;
+        const rgx = /[a-z]+/;
+        if(this.cmd.match(rgx) === null){
+            throw "Command names must match "+rgx.source
+        }
+    }
+    
+    public mayExecute(r: ResponseSender): boolean{
+      return (!this.options?.adminOnly) || r.isAdmin || RoomSettingsTracker.roles.get(r.sender)?.has(this.cmd)
     }
 
     async RunCommand(r: ResponseSender, argsObj: T & { _: string }): Promise<string | undefined> {
-        if (this.options?.adminOnly && !r.isAdmin) {
-            r.sendNotice("This command is only available to administrators")
+        if (!this.mayExecute(r)) {
+            r.sendNotice("This command is only available to administrators or users who have this role")
             return
         }
         return this.Run(r, argsObj)
@@ -161,3 +171,4 @@ export abstract class Command<T> {
 
     protected abstract Run(r: ResponseSender, args: T & { _: string }): Promise<any>;
 }
+9

@@ -7,7 +7,7 @@ import {
 } from "matrix-bot-sdk"
 import {Utils} from "../MapComplete/Utils";
 import * as https from "https";
-import {Command, ResponseSender} from "./command";
+import {Command} from "./command";
 import {InfoCommand} from "./infoCommand";
 import {HelpCommand} from "./helpCommand";
 import * as fakedom from "fake-dom"
@@ -17,108 +17,10 @@ import {CountryCoder} from "latlon2country";
 import Constants from "../MapComplete/Models/Constants";
 import {QuitCommand} from "./quitCommand";
 import DreamCommand from "./dreamCommand";
-import Combine from "../MapComplete/UI/Base/Combine";
 import SchemeCommand from "./schemeCommand";
+import {MatrixMessage, MessageHandler} from "./MessageHandler";
+import {RoleCommand} from "./RoleCommand";
 
-interface MessageEvent {
-    "content": {
-        "body": string,
-        "format": "org.matrix.custom.html",
-        "formatted_body": string,
-        "msgtype": "m.text"
-    },
-    /**
-     * Linux timestamp in milliseconds
-     */
-    "origin_server_ts": number,
-    "sender": string,
-    "type": "m.room.message",
-    "unsigned": { "age": number, "transaction_id": string },
-    "event_id": string
-}
-
-
-class MessageHandler {
-
-    private readonly _client: MatrixClient;
-    private _commands: Command<any>[];
-  
-    constructor(client: MatrixClient, commands: Command<any>[]) {
-        this._client = client;
-        this._commands = commands;
-    }
-
-    public async handle_message(roomId, event: MessageEvent): Promise<string | undefined> {
-        if (!event["content"]) return;
-        const oneHourAgo = (new Date().getTime()) - (60 * 60 * 1000);
-        if(event.origin_server_ts < oneHourAgo) {
-            console.log("Skip old message...")
-            // This message is older then one hour - we ignore it
-            return;
-        }
-        const botId = await this._client.getUserId();
-        const sender = event["sender"];
-
-        if (sender === botId) {
-            return
-        }
-        let body = event.content.body;
-        if(body === undefined){
-            return
-        }
-        const isDm = this._client.dms.isDm(roomId)
-        const prefixes = ["!", botId + ": ", botId + ": ", "MapComplete-bot: ", "MapComplete-bot:"]
-        if (isDm) {
-            prefixes.push("")
-        }
-        const matchingPrefix = prefixes.find(prefix => body.startsWith(prefix))
-        if (matchingPrefix === undefined) {
-            return;
-        }
-        body = body.substring(matchingPrefix.length)
-        console.log(`${roomId}: ${sender} says '${body}'`);
-        const r = new ResponseSender(this._client, roomId, sender);
-
-        const request = (body.split(" ")[0] ?? "").toLowerCase()
-        for (const command of this._commands) {
-            const key = command.cmd.toLowerCase()
-            if (request === key) {
-                const msg = body.substring(key.length)
-                const args = msg.split(" ").slice(1)
-                const argsObj = {}
-                let i = 0
-                for (const argName in command.args) {
-                    argsObj[argName] = args[i]
-                    i++
-                }
-                argsObj["_"] = (args.join(" "));
-                try {
-                    return await command.RunCommand(r, argsObj)
-                } catch (e) {
-                    const msg = "Sorry, something went wrong while executing command " + key
-                    if (r.isAdmin) {
-                        await r.sendNotice(msg + "\n\nThe error is: <code>" + e.message + "</code>")
-                    } else {
-                        await r.sendNotice(msg)
-                    }
-                    console.error(e)
-                }
-                return;
-            }
-        }
-
-        // No such command found
-
-        const sorted = Utils.sortedByLevenshteinDistance(request, this._commands, c => c.cmd)
-        await r.sendElement(new Combine([
-            `I didn't understand your request. Did you perhaps mean to type ${sorted.slice(0, 2).map(cmd => cmd.cmd).join(", ")} or ${sorted[3].cmd}?`,
-            "<p>Type <code>help</code> to see an overview of all commands</p>"
-        ]).SetClass("flex flex-col"))
-
-
-    }
-
-}
 
 Utils.download = (url, headers?: any): Promise<any> => {
     return new Promise((resolve, reject) => {
@@ -188,10 +90,10 @@ async function main(options: { accessToken?: string, username?: string, password
         new DreamCommand(),
         new QuitCommand()
     ]
-    allCommands.push(new HelpCommand(allCommands))
+    allCommands.push(new HelpCommand(version, allCommands))
     const handler = new MessageHandler(client, allCommands)
 
-    client.on("room.failed_decryption", async (roomId: string, event: MessageEvent, e: Error) => {
+    client.on("room.failed_decryption", async (roomId: string, event: MatrixMessage, e: Error) => {
         const oneHourAgo = (new Date().getTime()) - (60 * 1000);
         if(event.origin_server_ts < oneHourAgo) {
             console.log("Skip old unencryptable message...")
