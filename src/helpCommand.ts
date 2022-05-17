@@ -4,6 +4,7 @@ import Combine from "../MapComplete/UI/Base/Combine";
 import Title from "../MapComplete/UI/Base/Title";
 import Table from "../MapComplete/UI/Base/Table";
 import Constants from "../MapComplete/Models/Constants";
+import List from "../MapComplete/UI/Base/List";
 
 export class HelpCommand extends Command<{ cmd?: string }> {
     private _allCommands: Command<any>[];
@@ -28,9 +29,6 @@ export class HelpCommand extends Command<{ cmd?: string }> {
             
             const argsDocs : string[][] = []
             for (const key in cmd.args) {
-                if(cmd.options.adminOnly && !r.isAdmin){
-                    continue
-                }
                 argsDocs.push([key, cmd.args[key]])
             }
             await r.sendElement(
@@ -43,7 +41,17 @@ export class HelpCommand extends Command<{ cmd?: string }> {
 
             return;
         }
-        await r.sendHtml("Hi! I'm " + (await r.client.getUserId()) + " (built upon MapComplete "+Constants.vNumber+"). Send " + this._allCommands.map(cmd => "!" + cmd.cmd).join(", ") + " in this room and I'll reply with something special. To see more information about a single command, type !help <commandname>.")
+        
+        
+        const cmds: Command<any>[] = this._allCommands.filter(c => r.isAdmin || !c.options?.adminOnly)
+        await r.sendElement(
+            new Combine(["Hi! I'm MapComplete-bot (built upon MapComplete "+Constants.vNumber+").",
+            "Send a command to me and I'll answer with something useful: give me a command via a private message or put <code>!</code> before the command in a public room.",
+                "My supported commands are:",
+                new List(cmds.map(cmd => new Combine([
+                    cmd.cmd, ": ", cmd.documentation
+                ])))
+            ]).SetClass("flex flex-col"))
     }
 
 }

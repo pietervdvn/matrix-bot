@@ -198,6 +198,10 @@ async function main(options: { accessToken?: string, username?: string, password
             // This message is older then one hour - we ignore it
             return;
         }
+        if(event.sender === await client.getUserId()){
+            // We shouldn't send messages back to ourselves
+            return;
+        }
         console.error(`Failed to decrypt ${roomId} ${event['event_id']} ${new Date(event.origin_server_ts ).toISOString()} (which is fresher then ${new Date(oneHourAgo).toISOString()}) because `, e);
         await client.sendMessage(roomId, {
             "msgtype": "m.notice",
