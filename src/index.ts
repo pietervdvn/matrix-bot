@@ -42,7 +42,7 @@ class MessageHandler {
 
     private readonly _client: MatrixClient;
     private _commands: Command<any>[];
-
+  
     constructor(client: MatrixClient, commands: Command<any>[]) {
         this._client = client;
         this._commands = commands;
@@ -161,7 +161,8 @@ Utils.download = (url, headers?: any): Promise<any> => {
 }
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    console.log("Starting matrix bot")
+    const version = "0.0.01"
+    console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";
     if (options.accessToken === undefined) {
@@ -190,7 +191,7 @@ async function main(options: { accessToken?: string, username?: string, password
     allCommands.push(new HelpCommand(allCommands))
     const handler = new MessageHandler(client, allCommands)
 
-    client.on("room.failed_decryption", async (roomId: string, event: any, e: Error) => {
+    client.on("room.failed_decryption", async (roomId: string, event: MessageEvent, e: Error) => {
         const oneHourAgo = (new Date().getTime()) - (60 * 1000);
         if(event.origin_server_ts < oneHourAgo) {
             console.log("Skip old unencryptable message...")
@@ -229,6 +230,8 @@ async function main(options: { accessToken?: string, username?: string, password
 
         await client.start();
         console.log("Started! This bot is called ", await client.getUserId())
+        const dm = await client.dms.getOrCreateDm("@pietervdvn:matrix.org")
+        await new ResponseSender(client, dm, "@pietervdvn-bot:matrix.org").sendNotice("Hi! I just booted! My time is "+new Date().toISOString()+", I'm version "+version)
     } catch (e) {
         console.error("Starting bot failed...")
     }

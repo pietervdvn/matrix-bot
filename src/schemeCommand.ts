@@ -1,5 +1,5 @@
 import {Command, ResponseSender} from "./command";
-import * as scheme from "../MapComplete/Docs/Schemas/LayoutConfigJson.schema.json"
+import * as scheme from "../MapComplete/assets/layoutconfigmeta.json"
 import {Utils} from "../MapComplete/Utils";
 import BaseUIElement from "../MapComplete/UI/BaseUIElement";
 import Combine from "../MapComplete/UI/Base/Combine";
@@ -25,40 +25,20 @@ export default class SchemeCommand extends Command<{
     private static SchemeInfo(requestedKey: string): BaseUIElement[] {
         const r: BaseUIElement[] = []
         const allKeys: string[] = [];
-        for (const key in scheme.properties) {
+        const sch :{path: string[], type?: string,typeHint?: string, description?: string}[] = scheme["default"] ?? scheme
+        for (const item of sch) {
+            const key = item.path[item.path.length - 1] ?? "";
             if (Utils.levenshteinDistance(key, requestedKey) >= 3) {
                 allKeys.push(key)
                 continue;
             }
-            const item = scheme.properties[key]
             r.push(new Combine([
-                new Title(key + " (used at top level," + (item.type ?? "no type specificied") + ")", 3),
+                new Title(`${key} (Used at <code>${item.path.join(".")}</code>, ${item.typeHint ?? item.type ?? "no type specificied"})`, 3),
                 SchemeCommand.MdToElement(item.description)
             ]).SetClass("flex flex-col"))
         }
 
-        // Hmmm... Nothing found
-        // Let's have a look to the definition
-
-        for (const typeDefinitionKey in scheme.definitions) {
-            const typeDefinition = scheme.definitions[typeDefinitionKey]
-            const props = typeDefinition["properties"]
-            if (props === undefined) {
-                continue
-            }
-
-            for (const key in props) {
-                if (Utils.levenshteinDistance(key, requestedKey) >= 3) {
-                    allKeys.push(key)
-                    continue;
-                }
-                const item = props[key]
-                r.push(new Combine([
-                    new Title(key + " (used in " + typeDefinitionKey + ", " + (item?.type ?? "no type specificied") + ")", 3),
-                    SchemeCommand.MdToElement(item.description)
-                ]).SetClass("flex flex-col"))
-            }
-        }
+      
         if (r.length == 0) {
             const matches = Utils.sortedByLevenshteinDistance(requestedKey, allKeys, key => key).slice(0, 5)
             r.push(new Combine(["No matching keys found, maybe you meant one of:", new List(matches)]))

@@ -63,12 +63,12 @@ export class DocumentationCommand extends Command<{ id: string }> {
         }
         const d = layer.GenerateDocumentation(DocumentationCommand.themesUsingLayer(args.id).map(l => l.id))
 
-        if (d === undefined && th.id === undefined) {
+        if (d === undefined) {
             const closest = Utils.sortedByLevenshteinDistance(args.id, AllKnownLayouts.AllPublicLayers(), l => l.id)
                 .slice(0, 3)
                 .map(l => "<code>" + l.id + "</code>")
             await r.sendHtml("No layer nor theme found with name <code>" + args.id + "</code>. Maybe try " + closest.join(", "))
         }
-        await r.sendHtml(d.ConstructElement().innerHTML)
+        await r.sendElement(d)
     }
 }

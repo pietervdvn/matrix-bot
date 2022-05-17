@@ -28,6 +28,9 @@ export class HelpCommand extends Command<{ cmd?: string }> {
             
             const argsDocs : string[][] = []
             for (const key in cmd.args) {
+                if(cmd.options.adminOnly && !r.isAdmin){
+                    continue
+                }
                 argsDocs.push([key, cmd.args[key]])
             }
             await r.sendElement(
