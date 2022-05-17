@@ -117,7 +117,7 @@ export class MessageHandler {
         } catch (e) {
             const msg = "Sorry, something went wrong while executing command " + command.cmd
             if (r.isAdmin) {
-                await r.sendNotice(msg + "\n\nThe error is: <code>" + e.message + "</code>")
+                await r.sendHtml(msg + "\n\nThe error is: <code>" + e.message + "</code>")
             } else {
                 await r.sendNotice(msg)
             }

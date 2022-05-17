@@ -1,3 +1,6 @@
+import {FixedUiElement} from "../MapComplete/UI/Base/FixedUiElement";
+import showdown from "showdown";
+
 export default class BotUtils{
     /**
      * Converts `username` into `@username:matrix.org` if needed
@@ -10,5 +13,10 @@ export default class BotUtils{
             targetName = targetName+":matrix.org"
         }
         return targetName
-    } 
+    }
+
+    public static MdToElement(md: string): FixedUiElement {
+        const converter = new showdown.Converter();
+        return new FixedUiElement(converter.makeHtml(md))
+    }
 }

@@ -7,6 +7,7 @@ import Title from "../MapComplete/UI/Base/Title";
 import List from "../MapComplete/UI/Base/List";
 import {FixedUiElement} from "../MapComplete/UI/Base/FixedUiElement";
 import showdown from "showdown";
+import BotUtils from "./Utils";
 
 export default class SchemeCommand extends Command<{
     key: string,
@@ -15,11 +16,6 @@ export default class SchemeCommand extends Command<{
         super("scheme", "Gives information about a key in a theme-config-file", {
             key: "The name of the key"
         }, {});
-    }
-
-    private static MdToElement(md: string): FixedUiElement {
-        const converter = new showdown.Converter();
-        return new FixedUiElement(converter.makeHtml(md))
     }
 
     private static SchemeInfo(requestedKey: string): BaseUIElement[] {
@@ -34,7 +30,7 @@ export default class SchemeCommand extends Command<{
             }
             r.push(new Combine([
                 new Title(`${key} (Used at <code>${item.path.join(".")}</code>, ${item.typeHint ?? item.type ?? "no type specificied"})`, 3),
-                SchemeCommand.MdToElement(item.description)
+                BotUtils.MdToElement(item.description)
             ]).SetClass("flex flex-col"))
         }
 
