@@ -85,6 +85,9 @@ export class MessageHandler {
         let body = event.content.body;
         const isDm = this._client.dms.isDm(roomId)
         body = this.removePrefix(body, isDm)
+        if(body === undefined){
+            return
+        }
         console.log(`${roomId}: ${sender} says '${body}'`);
         const r = new ResponseSender(this._client, roomId, sender);
         return await this.executeCommand(body, r);

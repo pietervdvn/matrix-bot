@@ -5,6 +5,7 @@ import Title from "../MapComplete/UI/Base/Title";
 import Table from "../MapComplete/UI/Base/Table";
 import Constants from "../MapComplete/Models/Constants";
 import List from "../MapComplete/UI/Base/List";
+import {RoomSettingsTracker} from "./RoomSettings";
 
 export class HelpCommand extends Command<{ cmd?: string }> {
     private readonly _allCommands: Command<any>[];
@@ -37,6 +38,7 @@ export class HelpCommand extends Command<{ cmd?: string }> {
                 new Combine([
                     new Title(cmd.cmd,4),
                     cmd.documentation,
+                    cmd.mayExecute(r) ? "": "<b>You currently don't have sufficient permissions to run this command.</b> Ask "+RoomSettingsTracker.usersWithRole("roles").join(", ")+" to allow you",
                     new Table([],
                         argsDocs)
                 ]))

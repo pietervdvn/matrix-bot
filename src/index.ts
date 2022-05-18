@@ -19,7 +19,7 @@ import {QuitCommand} from "./quitCommand";
 import DreamCommand from "./dreamCommand";
 import SchemeCommand from "./schemeCommand";
 import {MatrixMessage, MessageHandler} from "./MessageHandler";
-import {RoleCommand} from "./RoleCommand";
+import {TagsCommand} from "./tagsCommand";
 
 
 Utils.download = (url, headers?: any): Promise<any> => {
@@ -84,6 +84,7 @@ async function main(options: { accessToken?: string, username?: string, password
 
     let allCommands: Command<any>[] = [
         new InfoCommand(countrycoder),
+        new TagsCommand(),
         new DocumentationCommand(),
         new SetLanguageCommand(),
         new SchemeCommand(),

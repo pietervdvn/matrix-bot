@@ -23,6 +23,16 @@ export class RoomSettingsTracker {
         }
         return v 
     }
-    
+
+    static usersWithRole(role: string): string[] {
+        const users : string[] = []
+        RoomSettingsTracker.roles.forEach((roles, user) => {
+            if(roles.has("Amdin") || roles.has(role)){
+                
+            users.push(user)
+            }
+        })
+        return users;
+    }
 }
 
