@@ -26,7 +26,7 @@ import LayoutConfig from "../MapComplete/Models/ThemeConfig/LayoutConfig";
 import {Paragraph} from "../MapComplete/UI/Base/Paragraph";
 import Img from "../MapComplete/UI/Base/Img";
 
-export class InfoCommand extends Command<{ id: string }> {
+export class InfoCommand extends Command<{ _: string }> {
 
     private _countryCoder: CountryCoder;
     private static config = (() => {
@@ -39,7 +39,7 @@ export class InfoCommand extends Command<{ id: string }> {
     constructor(countryCoder: CountryCoder) {
         super("info", "Gets info about an OSM-object. Either give an id OR a search string; the objects are interpreted and known values are shown.",
             {
-                "id": "The ID of the OSM-object or a search query"
+                "_": "The ID of the OSM-object or a search query"
             }
         );
         this._countryCoder = countryCoder;
@@ -133,8 +133,8 @@ export class InfoCommand extends Command<{ id: string }> {
     }
 
 
-    public async Run(r: ResponseSender, args: { id: string, _: string }): Promise<void> {
-        const id = args.id;
+    public async Run(r: ResponseSender, args: {  _: string }): Promise<void> {
+        const id = args._;
         if (id === null || id === undefined || id === "") {
             await r.sendNotice("Please, provide a search term of id to use this command")
             return
