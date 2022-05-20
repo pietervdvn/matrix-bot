@@ -1,15 +1,14 @@
-import {Command, ResponseSender} from "./command";
-import LayerConfig from "../MapComplete/Models/ThemeConfig/LayerConfig";
-import {AllKnownLayouts} from "../MapComplete/Customizations/AllKnownLayouts";
-import LayoutConfig from "../MapComplete/Models/ThemeConfig/LayoutConfig";
-import Combine from "../MapComplete/UI/Base/Combine";
-import List from "../MapComplete/UI/Base/List";
-import Constants from "../MapComplete/Models/Constants";
-import {Utils} from "../MapComplete/Utils";
-import QueryParameterDocumentation from "../MapComplete/UI/QueryParameterDocumentation";
-import Title from "../MapComplete/UI/Base/Title";
-import BotUtils from "./Utils";
-import {QueryParameters} from "../MapComplete/Logic/Web/QueryParameters";
+import LayerConfig from "../../MapComplete/Models/ThemeConfig/LayerConfig";
+import LayoutConfig from "../../MapComplete/Models/ThemeConfig/LayoutConfig";
+import {AllKnownLayouts} from "../../MapComplete/Customizations/AllKnownLayouts";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import Title from "../../MapComplete/UI/Base/Title";
+import {QueryParameters} from "../../MapComplete/Logic/Web/QueryParameters";
+import {ResponseSender} from "../ResponseSender";
+import QueryParameterDocumentation from "../../MapComplete/UI/QueryParameterDocumentation";
+import {Utils} from "../../MapComplete/Utils";
+import BotUtils from "../Utils";
+import {Command} from "../command";
 
 export class DocumentationCommand extends Command<{ id: string }> {
 

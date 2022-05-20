@@ -1,4 +1,5 @@
-import {Command, ResponseSender} from "./command";
+import {Command} from "../command";
+import {ResponseSender} from "../ResponseSender";
 
 export class QuitCommand extends Command<{ mode: "restart" | "shutdown" | string }> {
 
@@ -8,6 +9,9 @@ export class QuitCommand extends Command<{ mode: "restart" | "shutdown" | string
         super("exit", "Shuts down the bot",
             {
                 mode: "Indicates if the service should be restarted, must be `shutdown`"
+            },
+            {
+                adminOnly: true
             }
         );
     }

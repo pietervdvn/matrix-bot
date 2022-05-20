@@ -1,30 +1,31 @@
-import {Command, ResponseSender} from "./command";
-import {OsmObject} from "../MapComplete/Logic/Osm/OsmObject";
-import {AllKnownLayouts} from "../MapComplete/Customizations/AllKnownLayouts";
-import LayerConfig from "../MapComplete/Models/ThemeConfig/LayerConfig";
-import {UIEventSource} from "../MapComplete/Logic/UIEventSource";
-import {AllTagsPanel} from "../MapComplete/UI/AllTagsPanel";
-import Combine from "../MapComplete/UI/Base/Combine";
-import Title from "../MapComplete/UI/Base/Title";
-import TagRenderingConfig from "../MapComplete/Models/ThemeConfig/TagRenderingConfig";
-import {SubstitutedTranslation} from "../MapComplete/UI/SubstitutedTranslation";
-import BaseUIElement from "../MapComplete/UI/BaseUIElement";
-import Table from "../MapComplete/UI/Base/Table";
-import {FixedUiElement} from "../MapComplete/UI/Base/FixedUiElement";
-import MetaTagging from "../MapComplete/Logic/MetaTagging";
-import {ExtraFuncParams} from "../MapComplete/Logic/ExtraFunctions";
-import Link from "../MapComplete/UI/Base/Link";
-import {DocumentationCommand} from "./documentationCommand";
-import {GeoOperations} from "../MapComplete/Logic/GeoOperations";
-import {Geocoding} from "../MapComplete/Logic/Osm/Geocoding";
+import LayerConfig from "../../MapComplete/Models/ThemeConfig/LayerConfig";
 import {CountryCoder} from "latlon2country";
-import {OH} from "../MapComplete/UI/OpeningHours/OpeningHours";
-import Translations from "../MapComplete/UI/i18n/Translations";
-import Constants from "../MapComplete/Models/Constants";
-import WikipediaBox from "../MapComplete/UI/Wikipedia/WikipediaBox";
-import LayoutConfig from "../MapComplete/Models/ThemeConfig/LayoutConfig";
-import {Paragraph} from "../MapComplete/UI/Base/Paragraph";
-import Img from "../MapComplete/UI/Base/Img";
+import LayoutConfig from "../../MapComplete/Models/ThemeConfig/LayoutConfig";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import {ExtraFuncParams} from "../../MapComplete/Logic/ExtraFunctions";
+import {ResponseSender} from "../ResponseSender";
+import {DocumentationCommand} from "./documentationCommand";
+import {UIEventSource} from "../../MapComplete/Logic/UIEventSource";
+import {GeoOperations} from "../../MapComplete/Logic/GeoOperations";
+import MetaTagging from "../../MapComplete/Logic/MetaTagging";
+import WikipediaBox from "../../MapComplete/UI/Wikipedia/WikipediaBox";
+import {SubstitutedTranslation} from "../../MapComplete/UI/SubstitutedTranslation";
+import {FixedUiElement} from "../../MapComplete/UI/Base/FixedUiElement";
+import {OH} from "../../MapComplete/UI/OpeningHours/OpeningHours";
+import BaseUIElement from "../../MapComplete/UI/BaseUIElement";
+import Img from "../../MapComplete/UI/Base/Img";
+import Table from "../../MapComplete/UI/Base/Table";
+import {AllKnownLayouts} from "../../MapComplete/Customizations/AllKnownLayouts";
+import {AllTagsPanel} from "../../MapComplete/UI/AllTagsPanel";
+import Title from "../../MapComplete/UI/Base/Title";
+import {Paragraph} from "../../MapComplete/UI/Base/Paragraph";
+import {Command} from "../command";
+import TagRenderingConfig from "../../MapComplete/Models/ThemeConfig/TagRenderingConfig";
+import {OsmObject} from "../../MapComplete/Logic/Osm/OsmObject";
+import {Geocoding} from "../../MapComplete/Logic/Osm/Geocoding";
+import Translations from "../../MapComplete/UI/i18n/Translations";
+import Link from "../../MapComplete/UI/Base/Link";
+
 
 export class InfoCommand extends Command<{ _: string }> {
 

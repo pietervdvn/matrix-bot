@@ -1,6 +1,7 @@
-import {Command, ResponseSender} from "./command";
+import {Command} from "./command";
 import {MessageHandler} from "./MessageHandler";
 import BotUtils from "./Utils";
+import {ResponseSender} from "./ResponseSender";
 
 export default class SendMessageCommand extends Command<{
     to: string,

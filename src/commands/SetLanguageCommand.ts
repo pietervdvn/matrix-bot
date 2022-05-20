@@ -1,7 +1,7 @@
-import {Command, ResponseSender} from "./command";
-import * as used_languages from "../MapComplete/assets/generated/used_languages.json";
-import {RoomSettingsTracker} from "./RoomSettings";
-
+import {RoomSettingsTracker} from "../RoomSettings";
+import {Command} from "../command";
+import {ResponseSender} from "../ResponseSender";
+import * as used_languages from "../../MapComplete/assets/generated/used_languages.json"
 export class SetLanguageCommand extends Command<{ lang: string }> {
 
     constructor() {

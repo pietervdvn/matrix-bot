@@ -1,5 +1,6 @@
-import {Command, ResponseSender} from "./command";
+import {Command} from "../command";
 import * as dreams from "./dreams.json"
+import {ResponseSender} from "../ResponseSender";
 
 export default class DreamCommand extends Command<{}> {
 

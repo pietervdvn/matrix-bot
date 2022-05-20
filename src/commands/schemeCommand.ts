@@ -1,13 +1,11 @@
-import {Command, ResponseSender} from "./command";
-import * as scheme from "../MapComplete/assets/layoutconfigmeta.json"
-import {Utils} from "../MapComplete/Utils";
-import BaseUIElement from "../MapComplete/UI/BaseUIElement";
-import Combine from "../MapComplete/UI/Base/Combine";
-import Title from "../MapComplete/UI/Base/Title";
-import List from "../MapComplete/UI/Base/List";
-import {FixedUiElement} from "../MapComplete/UI/Base/FixedUiElement";
-import showdown from "showdown";
-import BotUtils from "./Utils";
+import BaseUIElement from "../../MapComplete/UI/BaseUIElement";
+import {Command} from "../command";
+import {Utils} from "../../MapComplete/Utils";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import Title from "../../MapComplete/UI/Base/Title";
+import List from "../../MapComplete/UI/Base/List";
+import BotUtils from "../Utils";
+import {ResponseSender} from "../ResponseSender";
 
 export default class SchemeCommand extends Command<{
     key: string,

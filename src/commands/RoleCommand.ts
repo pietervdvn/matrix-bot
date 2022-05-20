@@ -1,10 +1,11 @@
-import {Command, ResponseSender} from "./command";
-import BotUtils from "./Utils";
-import {RoomSettingsTracker} from "./RoomSettings";
-import List from "../MapComplete/UI/Base/List";
-import Combine from "../MapComplete/UI/Base/Combine";
-import {MessageHandler} from "./MessageHandler";
-import Table from "../MapComplete/UI/Base/Table";
+import Table from "../../MapComplete/UI/Base/Table";
+import {MessageHandler} from "../MessageHandler";
+import {RoomSettingsTracker} from "../RoomSettings";
+import {Command} from "../command";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import List from "../../MapComplete/UI/Base/List";
+import BotUtils from "../Utils";
+import {ResponseSender} from "../ResponseSender";
 
 export class RoleCommand extends Command<{ verb: "list" | "add" | "remove" | "reset" | string, user: string, role: string | undefined }> {
 
@@ -17,7 +18,8 @@ export class RoleCommand extends Command<{ verb: "list" | "add" | "remove" | "re
                 verb: "Wether to <code>add</code> or <code>remove</code> a role from a user. Use <code>list</code> to see all roles a user has",
                 user: "Whom to change roles for",
                 role: "Which role to add; must be a command name"
-            }
+            },
+            {adminOnly: true}
         );
         this._handler = handler;
     }

@@ -38,7 +38,7 @@ export class HelpCommand extends Command<{ cmd?: string }> {
                 new Combine([
                     new Title(cmd.cmd,4),
                     cmd.documentation,
-                    cmd.mayExecute(r) ? "": "<b>You currently don't have sufficient permissions to run this command.</b> Ask "+RoomSettingsTracker.usersWithRole("roles").join(", ")+" to allow you",
+                    cmd.mayExecute(r) ? "": "<b>You currently don't have sufficient permissions to run this command.</b> Ask "+RoomSettingsTracker.usersWithRole("roles").join(", ")+" to give you sufficient permissions",
                     new Table([],
                         argsDocs)
                 ]))
@@ -55,7 +55,7 @@ export class HelpCommand extends Command<{ cmd?: string }> {
                 new List(cmds
                     .filter(cmd => cmd.mayExecute(r))
                     .map(cmd => new Combine([
-                    "<b>"+cmd.cmd+"</b>", ": ", cmd.documentation
+                    "<b>"+cmd.cmd+"</b>", ": ", cmd.documentation, cmd.options?.adminOnly ? "(<i>Priviliged command</i>)" : ""
                 ])))
             ]).SetClass("flex flex-col"))
     }

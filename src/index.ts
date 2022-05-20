@@ -8,18 +8,18 @@ import {
 import {Utils} from "../MapComplete/Utils";
 import * as https from "https";
 import {Command} from "./command";
-import {InfoCommand} from "./infoCommand";
-import {HelpCommand} from "./helpCommand";
 import * as fakedom from "fake-dom"
-import {DocumentationCommand} from "./documentationCommand";
-import {SetLanguageCommand} from "./SetLanguageCommand";
 import {CountryCoder} from "latlon2country";
 import Constants from "../MapComplete/Models/Constants";
-import {QuitCommand} from "./quitCommand";
-import DreamCommand from "./dreamCommand";
-import SchemeCommand from "./schemeCommand";
 import {MatrixMessage, MessageHandler} from "./MessageHandler";
-import {TagsCommand} from "./tagsCommand";
+import {SetLanguageCommand} from "./commands/SetLanguageCommand";
+import DreamCommand from "./commands/dreamCommand";
+import {HelpCommand} from "./commands/helpCommand";
+import {InfoCommand} from "./commands/infoCommand";
+import {QuitCommand} from "./commands/quitCommand";
+import {TagsCommand} from "./commands/tagsCommand";
+import SchemeCommand from "./commands/schemeCommand";
+import {DocumentationCommand} from "./commands/documentationCommand";
 
 
 Utils.download = (url, headers?: any): Promise<any> => {

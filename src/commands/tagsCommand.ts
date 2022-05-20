@@ -1,12 +1,9 @@
-import {Command, ResponseSender} from "./command";
-import {OsmObject} from "../MapComplete/Logic/Osm/OsmObject";
-import Combine from "../MapComplete/UI/Base/Combine";
-import BaseUIElement from "../MapComplete/UI/BaseUIElement";
-import Table from "../MapComplete/UI/Base/Table";
-import {FixedUiElement} from "../MapComplete/UI/Base/FixedUiElement";
-import {Geocoding} from "../MapComplete/Logic/Osm/Geocoding";
-import {OH} from "../MapComplete/UI/OpeningHours/OpeningHours";
-import Translations from "../MapComplete/UI/i18n/Translations";
+import Table from "../../MapComplete/UI/Base/Table";
+import {Command} from "../command";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import {OsmObject} from "../../MapComplete/Logic/Osm/OsmObject";
+import {Geocoding} from "../../MapComplete/Logic/Osm/Geocoding";
+import {ResponseSender} from "../ResponseSender";
 
 export class TagsCommand extends Command<{ _: string }> {
 
