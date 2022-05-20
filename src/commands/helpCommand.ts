@@ -57,7 +57,7 @@ export class HelpCommand extends Command<{ cmd?: string }> {
                 new List(cmds
                     .filter(cmd => cmd.mayExecute(r))
                     .map(cmd => new Combine([
-                    "<b>"+cmd.cmd+"</b>", ": ", cmd.documentation, cmd.options?.adminOnly ? "(<i>Priviliged command</i>)" : ""
+                    "<b>"+cmd.cmd+"</b>", ": ", cmd.documentation, cmd.options?.adminOnly ? " (<i>Priviliged command</i>)" : ""
                 ])))
             ]).SetClass("flex flex-col"))
     }
