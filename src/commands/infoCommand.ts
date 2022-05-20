@@ -25,6 +25,7 @@ import {OsmObject} from "../../MapComplete/Logic/Osm/OsmObject";
 import {Geocoding} from "../../MapComplete/Logic/Osm/Geocoding";
 import Translations from "../../MapComplete/UI/i18n/Translations";
 import Link from "../../MapComplete/UI/Base/Link";
+import Constants from "../../MapComplete/Models/Constants";
 
 
 export class InfoCommand extends Command<{ _: string }> {

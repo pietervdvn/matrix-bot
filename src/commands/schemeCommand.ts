@@ -6,7 +6,7 @@ import Title from "../../MapComplete/UI/Base/Title";
 import List from "../../MapComplete/UI/Base/List";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
-
+import * as scheme from "../../MapComplete/assets/layoutconfigmeta.json"
 export default class SchemeCommand extends Command<{
     key: string,
 }> {

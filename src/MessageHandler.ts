@@ -1,9 +1,10 @@
 import {MatrixClient} from "matrix-bot-sdk";
-import {Command, ResponseSender} from "./command";
+import {Command} from "./command";
 import {Utils} from "../MapComplete/Utils";
 import Combine from "../MapComplete/UI/Base/Combine";
-import SendMessageCommand from "./sendMessageCommand";
-import {RoleCommand} from "./RoleCommand";
+import SendMessageCommand from "./commands/sendMessageCommand";
+import {RoleCommand} from "./commands/RoleCommand";
+import {ResponseSender} from "./ResponseSender";
 
 export interface MatrixMessage {
     "content": {

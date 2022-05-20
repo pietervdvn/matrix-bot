@@ -9,6 +9,8 @@ import QueryParameterDocumentation from "../../MapComplete/UI/QueryParameterDocu
 import {Utils} from "../../MapComplete/Utils";
 import BotUtils from "../Utils";
 import {Command} from "../command";
+import List from "../../MapComplete/UI/Base/List";
+import Constants from "../../MapComplete/Models/Constants";
 
 export class DocumentationCommand extends Command<{ id: string }> {
 
