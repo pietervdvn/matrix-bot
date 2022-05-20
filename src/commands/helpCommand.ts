@@ -6,6 +6,7 @@ import Combine from "../../MapComplete/UI/Base/Combine";
 import Title from "../../MapComplete/UI/Base/Title";
 import List from "../../MapComplete/UI/Base/List";
 import {ResponseSender} from "../ResponseSender";
+import Constants from "../../MapComplete/Models/Constants";
 
 
 export class HelpCommand extends Command<{ cmd?: string }> {
