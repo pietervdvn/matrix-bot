@@ -22,10 +22,6 @@ export class DocumentationCommand extends Command<{ id: string }> {
         );
     }
 
-    public static themesUsingLayer(id: string): LayoutConfig[] {
-        return AllKnownLayouts.layoutsList.filter(l => l.id !== "personal" && l.layers.some(layer => layer.id === id))
-    }
-
     private static matchingLayer(documentation): LayerConfig | undefined {
         for (const layer of AllKnownLayouts.AllPublicLayers()) {
             if (layer.id === documentation) {
@@ -56,7 +52,7 @@ export class DocumentationCommand extends Command<{ id: string }> {
             return
         }
         const layer = DocumentationCommand.matchingLayer(args.id)
-        const d = layer === undefined ? undefined : layer.GenerateDocumentation(DocumentationCommand.themesUsingLayer(args.id).map(l => l.id))
+        const d = layer === undefined ? undefined : layer.GenerateDocumentation(AllKnownLayouts.themesUsingLayer(args.id).map(l => l.id))
         if (d !== undefined) {
             await r.sendElement(d)
             return;

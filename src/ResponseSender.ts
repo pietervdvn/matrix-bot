@@ -1,7 +1,8 @@
 import {MatrixClient} from "matrix-bot-sdk";
 import BaseUIElement from "../MapComplete/UI/BaseUIElement";
 import Locale from "../MapComplete/UI/i18n/Locale";
-import {RoomSettingsTracker} from "./RoomSettings";
+import {RoomSettings, RoomSettingsTracker} from "./RoomSettings";
+import {Translation} from "../MapComplete/UI/i18n/Translation";
 
 export class ResponseSender {
     public client: MatrixClient;
@@ -95,6 +96,9 @@ export class ResponseSender {
 
     }
 
+    public roomSettings(): RoomSettings | undefined {
+        return RoomSettingsTracker.settingsFor(this.roomId)
+    }
 
     public async sendHtml(msg, cleanup = true): Promise<void> {
         if (msg.length > 8000 && !this.client.dms.isDm(this.roomId)) {
@@ -132,4 +136,7 @@ export class ResponseSender {
         }
     }
 
+    text(translation: Translation) {
+        return translation.textFor(this.roomSettings().language.data);
+    }
 }

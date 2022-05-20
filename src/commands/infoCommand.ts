@@ -258,7 +258,7 @@ export class InfoCommand extends Command<{ _: string }> {
 
         const themes: LayoutConfig[] =Array.from( new Set(
             [].concat(
-                ...layers.map(l => DocumentationCommand.themesUsingLayer(l.id))
+                ...layers.map(l => AllKnownLayouts.themesUsingLayer(l.id, true))
             )
         ))
 
@@ -269,29 +269,7 @@ export class InfoCommand extends Command<{ _: string }> {
             editButton = new Combine(
                 themes.filter(th => !th.hideFromOverview).map(th => 
                     new Link(
-                        new Combine([
-                            new Img("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
-                                "<svg\n" +
-                                "   width=\"100\"\n" +
-                                "   height=\"100\"\n" +
-                                "   viewBox=\"0 0 100 100\"\n" +
-                                "   version=\"1.1\"\n" +
-                                "   id=\"svg5\"\n" +
-                                "   xmlns=\"http://www.w3.org/2000/svg\"\n" +
-                                "   xmlns:svg=\"http://www.w3.org/2000/svg\">\n" +
-                                "  <defs\n" +
-                                "     id=\"defs9\" />\n" +
-                                "  <g\n" +
-                                "     id=\"surface1\"\n" +
-                                "     transform=\"matrix(0.30010319,0,0,0.30010319,1.0841831,-6.6113148)\">\n" +
-                                "    <path\n" +
-                                "       style=\"fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\n" +
-                                "       d=\"M 257.71484,23.375 210.85547,70.125 281.14453,140.25 328,93.5 Z M 0,280.5 0.25,350.83203 70.285156,350.625 257.71484,163.625 187.42969,93.5 Z m 70.285156,46.75 H 23.429688 V 280.5 h 23.425781 v 23.375 h 23.429687 z m 0,0\"\n" +
-                                "       id=\"path2\" />\n" +
-                                "  </g>\n" +
-                                "</svg>\n", true),
-                        new Title("Edit this element with "+th.title.txt ,5), 
-                        ]),
+                        new Title("Edit this element with "+th.title.txt ,5),
                         `https://mapcomplete.osm.be/${th.id}.html?z=17&lon=${lon}&lat=${lat}#${geojson.properties.id}`, true))
             )
         } else {

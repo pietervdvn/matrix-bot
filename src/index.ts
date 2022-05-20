@@ -21,6 +21,7 @@ import {TagsCommand} from "./commands/tagsCommand";
 import SchemeCommand from "./commands/schemeCommand";
 import {DocumentationCommand} from "./commands/documentationCommand";
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from "fs";
+import SearchCommand from "./commands/searchCommand";
 
 
 Utils.download = (url, headers?: any): Promise<any> => {
@@ -64,7 +65,7 @@ Utils.download = (url, headers?: any): Promise<any> => {
 }
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.0.4"
+    const version = "0.1.0"
     console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";
@@ -91,6 +92,7 @@ async function main(options: { accessToken?: string, username?: string, password
 
     let allCommands: Command<any>[] = [
         new InfoCommand(countrycoder),
+        new SearchCommand(),
         new TagsCommand(),
         new DocumentationCommand(),
         new SetLanguageCommand(),
