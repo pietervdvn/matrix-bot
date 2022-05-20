@@ -37,7 +37,7 @@ export default class SearchCommand extends Command<{
             if (Utils.levenshteinDistance(simplifiedRequestedId, simplifiedLayerId) < 3) {
                 return {config: layer};
             } 
-            const simplifiedLayerName = layer.name.textFor(language)?.toLowerCase()?.replace(/[ _]/g, "")
+            const simplifiedLayerName = layer.name?.textFor(language)?.toLowerCase()?.replace(/[ _]/g, "")
 
             if(simplifiedLayerName !== undefined && Utils.levenshteinDistance(simplifiedRequestedId,simplifiedLayerName ) < 3){
                 return {config: layer}

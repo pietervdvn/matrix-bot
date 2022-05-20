@@ -5,6 +5,7 @@ import Combine from "../MapComplete/UI/Base/Combine";
 import SendMessageCommand from "./commands/sendMessageCommand";
 import {RoleCommand} from "./commands/RoleCommand";
 import {ResponseSender} from "./ResponseSender";
+import List from "../MapComplete/UI/Base/List";
 
 export interface MatrixMessage {
     "content": {
@@ -125,7 +126,7 @@ export class MessageHandler {
                     new Combine([
                         msg,
                         "<p>The error is <code>"+e.message+"</code></p>",
-                        JSON.stringify(e.stack)
+                      new List(  JSON.stringify(e.stack).split("\n"))
                     ]))
             } else {
                 await r.sendNotice(msg)
