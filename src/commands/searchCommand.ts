@@ -37,9 +37,9 @@ export default class SearchCommand extends Command<{
             if (Utils.levenshteinDistance(simplifiedRequestedId, simplifiedLayerId) < 3) {
                 return {config: layer};
             } 
-            const simplifiedLayerName = layer.name.textFor(language).toLowerCase().replace(/[ _]/g, "")
+            const simplifiedLayerName = layer.name.textFor(language)?.toLowerCase()?.replace(/[ _]/g, "")
 
-            if(Utils.levenshteinDistance(simplifiedRequestedId,simplifiedLayerName ) < 3){
+            if(simplifiedLayerName !== undefined && Utils.levenshteinDistance(simplifiedRequestedId,simplifiedLayerName ) < 3){
                 return {config: layer}
             }
 
@@ -47,11 +47,9 @@ export default class SearchCommand extends Command<{
 
         // Next: search the presets for a match
         for (const layer of AllKnownLayouts.AllPublicLayers()) {
-            const simplifiedLayerId = layer.id.toLowerCase().replace(/[ _]/g, "")
-
             for (const preset of layer.presets) {
-                const simplifiedPresetTitle = preset.title.textFor(language).toLowerCase().replace(/[ _]/g, "")
-                if (simplifiedPresetTitle.indexOf(simplifiedRequestedId) >= 0) {
+                const simplifiedPresetTitle = preset.title.textFor(language)?.toLowerCase()?.replace(/[ _]/g, "")
+                if (simplifiedPresetTitle !== undefined && simplifiedPresetTitle.indexOf(simplifiedRequestedId) >= 0) {
                     return {config: layer, preset};
                 }
             }
