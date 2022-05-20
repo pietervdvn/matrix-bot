@@ -20,6 +20,7 @@ import {QuitCommand} from "./commands/quitCommand";
 import {TagsCommand} from "./commands/tagsCommand";
 import SchemeCommand from "./commands/schemeCommand";
 import {DocumentationCommand} from "./commands/documentationCommand";
+import {existsSync, readFileSync, writeFileSync} from "fs";
 
 
 Utils.download = (url, headers?: any): Promise<any> => {
@@ -73,6 +74,7 @@ async function main(options: { accessToken?: string, username?: string, password
         let cl = await auth.passwordLogin(options.username, options.password);
         options.accessToken = await cl.accessToken
         console.log("Login successfull, creating a new login with the access token " + (await cl.accessToken))
+        writeFileSync("./storage/access_token.json", options.accessToken, "utf8")
     }
     const storage = new SimpleFsStorageProvider("./storage/bot.json");
     const cryptoProvider = new RustSdkCryptoStorageProvider("./storage/encrypted/");
@@ -128,7 +130,7 @@ async function main(options: { accessToken?: string, username?: string, password
                 client.stop()
             }
         } catch (e) {
-            console.error("Could not handle a room message: ", e)
+            console.log("Could not handle a room message: ", e)
         }
     });
 
@@ -158,7 +160,11 @@ if (fakedom === undefined || window === undefined) {
 
 
 const [command, username, password] = process.argv.slice(2)
-if (command === "--password") {
+if(existsSync("./storage/access_token.json")){
+   const accessToken : string = readFileSync("./storage/access_token.json", "utf8")
+    console.log("Loaded access token from disk")
+   main({accessToken}) 
+}else if (command === "--password") {
     mainSync({password, username})
 } else {
     mainSync({accessToken: command});

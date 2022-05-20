@@ -331,7 +331,7 @@ export class InfoCommand extends Command<{ _: string }> {
             
             await r.sendHtml(rendered.ConstructElement().outerHTML)
         } catch (e) {
-            console.error(e)
+            console.log(e.toString())
         }
     }
 }
