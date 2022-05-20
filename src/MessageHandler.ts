@@ -95,7 +95,7 @@ export class MessageHandler {
     }
 
     public async executeCommand(body: string, r: ResponseSender): Promise<string | undefined> {
-        const request = (body.split(" ")[0] ?? "").toLowerCase()
+        const request = (body.trim().split(" ")[0] ?? "").toLowerCase()
         const command = this._commandsMap.get(request)
         if (command === undefined) {
             const sorted = Utils.sortedByLevenshteinDistance(request, this._commands, c => c.cmd)

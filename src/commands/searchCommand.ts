@@ -10,13 +10,15 @@ export default class SearchCommand extends Command<
     
     constructor() {
         super("search", "Searches for POI in or near a location",{
-            layerid: "The name of a layer",
+            layerid: "The name of a layer OR a single search term",
             verb: "Either search in a geographical area (e.g. a city) or search near a POI",
             _: "The search term"
         });
     }
 
     protected Run(r: ResponseSender, args: { layerid: string; verb: "in" | "near" | string; _: string } & { _: string }): Promise<any> {
+        
+        
         return Promise.resolve(undefined);
     }
     

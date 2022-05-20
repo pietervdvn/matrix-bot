@@ -20,7 +20,7 @@ import {QuitCommand} from "./commands/quitCommand";
 import {TagsCommand} from "./commands/tagsCommand";
 import SchemeCommand from "./commands/schemeCommand";
 import {DocumentationCommand} from "./commands/documentationCommand";
-import {existsSync, readFileSync, writeFileSync} from "fs";
+import {existsSync, mkdirSync, readFileSync, writeFileSync} from "fs";
 
 
 Utils.download = (url, headers?: any): Promise<any> => {
@@ -64,7 +64,7 @@ Utils.download = (url, headers?: any): Promise<any> => {
 }
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.0.3"
+    const version = "0.0.4"
     console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";
@@ -74,7 +74,12 @@ async function main(options: { accessToken?: string, username?: string, password
         let cl = await auth.passwordLogin(options.username, options.password);
         options.accessToken = await cl.accessToken
         console.log("Login successfull, creating a new login with the access token " + (await cl.accessToken))
+        if(!existsSync("./storage")){
+            mkdirSync("./storage");
+        }
         writeFileSync("./storage/access_token.json", options.accessToken, "utf8")
+        console.log("Created access token on disk; please restart without arguments")
+        return;
     }
     const storage = new SimpleFsStorageProvider("./storage/bot.json");
     const cryptoProvider = new RustSdkCryptoStorageProvider("./storage/encrypted/");

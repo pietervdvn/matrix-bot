@@ -324,11 +324,8 @@ export class InfoCommand extends Command<{ _: string }> {
 
                 const countries = await this._countryCoder.GetCountryCodeAsync(lon, lat)
                 geojson.properties["_country"] = countries[0].toLowerCase()
-                rendered = InfoCommand.render(obj, layers)
+                rendered = InfoCommand.render(geojson, layers)
             }
-
-            
-            
             await r.sendHtml(rendered.ConstructElement().outerHTML)
         } catch (e) {
             console.log(e.toString())
