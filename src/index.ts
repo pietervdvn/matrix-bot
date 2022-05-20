@@ -63,7 +63,7 @@ Utils.download = (url, headers?: any): Promise<any> => {
 }
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.0.01"
+    const version = "0.0.3"
     console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";

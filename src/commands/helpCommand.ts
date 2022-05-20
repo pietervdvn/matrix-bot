@@ -1,11 +1,12 @@
-import {Command, ResponseSender} from "./command";
-import {Utils} from "../MapComplete/Utils";
-import Combine from "../MapComplete/UI/Base/Combine";
-import Title from "../MapComplete/UI/Base/Title";
-import Table from "../MapComplete/UI/Base/Table";
-import Constants from "../MapComplete/Models/Constants";
-import List from "../MapComplete/UI/Base/List";
-import {RoomSettingsTracker} from "./RoomSettings";
+import Table from "../../MapComplete/UI/Base/Table";
+import {RoomSettingsTracker} from "../RoomSettings";
+import {Command} from "../command";
+import {Utils} from "../../MapComplete/Utils";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import Title from "../../MapComplete/UI/Base/Title";
+import List from "../../MapComplete/UI/Base/List";
+import {ResponseSender} from "../ResponseSender";
+
 
 export class HelpCommand extends Command<{ cmd?: string }> {
     private readonly _allCommands: Command<any>[];
