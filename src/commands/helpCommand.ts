@@ -51,7 +51,7 @@ export class HelpCommand extends Command<{ cmd?: string }> {
         
         const cmds: Command<any>[] = this._allCommands.filter(c => r.isAdmin || !c.options?.adminOnly)
         await r.sendElement(
-            new Combine(["Hi! I'm MapComplete-bot "+this._version+"(built upon MapComplete "+Constants.vNumber+").",
+            new Combine(["Hi! I'm MapComplete-bot "+this._version+" (built upon MapComplete "+Constants.vNumber+").",
             "Send a command to me and I'll answer with something useful: give me a command via a private message or put <code>!</code> before the command in a public room.",
                 "My supported commands are:",
                 new List(cmds

@@ -31,6 +31,21 @@ export default class SearchCommand extends Command<{
 
     private static findMatchingLayer(requestedId: string, language: string): {config: LayerConfig, preset?: PresetConfig} | undefined {
         const simplifiedRequestedId = requestedId.toLowerCase().replace(/[ _]/g, "")
+        // First search for matching layer ids and layer names
+        for (const layer of AllKnownLayouts.AllPublicLayers()) {
+            const simplifiedLayerId = layer.id.toLowerCase().replace(/[ _]/g, "")
+            if (Utils.levenshteinDistance(simplifiedRequestedId, simplifiedLayerId) < 3) {
+                return {config: layer};
+            } 
+            const simplifiedLayerName = layer.name.textFor(language).toLowerCase().replace(/[ _]/g, "")
+
+            if(Utils.levenshteinDistance(simplifiedRequestedId,simplifiedLayerName ) < 3){
+                return {config: layer}
+            }
+
+        }
+
+        // Next: search the presets for a match
         for (const layer of AllKnownLayouts.AllPublicLayers()) {
             const simplifiedLayerId = layer.id.toLowerCase().replace(/[ _]/g, "")
 
@@ -39,10 +54,6 @@ export default class SearchCommand extends Command<{
                 if (simplifiedPresetTitle.indexOf(simplifiedRequestedId) >= 0) {
                     return {config: layer, preset};
                 }
-            }
-            
-            if (Utils.levenshteinDistance(simplifiedRequestedId, simplifiedLayerId) < 3) {
-                return {config: layer};
             }
 
         }
