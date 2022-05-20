@@ -326,7 +326,7 @@ export class InfoCommand extends Command<{ _: string }> {
                 geojson.properties["_country"] = countries[0].toLowerCase()
                 rendered = InfoCommand.render(geojson, layers)
             }
-            await r.sendHtml(rendered.ConstructElement().outerHTML)
+            await r.sendElement(rendered)
         } catch (e) {
             console.log(e.toString())
         }
