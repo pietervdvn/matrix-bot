@@ -30,7 +30,7 @@ export class QuitCommand extends Command<{ mode: "restart" | "shutdown" | string
             console.log("Received 'update' command, updating...")
             await r.sendNotice("Updating MapComplete...")
 
-            const process = exec("cd MapComplete && git pull", ((error, stdout, stderr) => {
+            const process = exec("cd MapComplete && git pull && npm run generate:layeroverview", ((error, stdout, stderr) => {
                 r.sendHtml("StdOut gave: <code>"+stdout+"</code>")
                 
                 if (error !== null) {
