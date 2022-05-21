@@ -2,6 +2,8 @@ import {MessageHandler} from "../MessageHandler";
 import {Command} from "../command";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
+import Combine from "../../MapComplete/UI/Base/Combine";
+import List from "../../MapComplete/UI/Base/List";
 
 export default class SendMessageCommand extends Command<{
     to: string,
@@ -54,7 +56,7 @@ export default class SendMessageCommand extends Command<{
             await r.sendNotice("I delivered the message to "+targetName)
             return result
         } catch (e) {
-            await r.sendNotice("I couldn't execute <code>" + args._ + "</code> due to " + JSON.stringify(e))
+            await r.sendElement(new Combine(["I couldn't execute <code>" + args._ + "</code> due to " + e.message, new List(e.stack.split("\n"))]))
         }
     }
 
