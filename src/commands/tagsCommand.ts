@@ -15,17 +15,18 @@ export class TagsCommand extends Command<{ _: string }> {
         );
     }
 
-private async SendInfoAbout(r: ResponseSender, osmId: string){
-    const obj = await OsmObject.DownloadObjectAsync(osmId)
-    const props = obj.asGeoJson().properties;
-
-    await r.sendElement(
-        new Combine([
-            new Table(["key","value"],
-                Object.keys(props).map(k => [k, props[k]]))])
-    )
-}
+    public static async SendInfoAbout(r: ResponseSender, geocoded: {osm_type: string, osm_id: number | string}){
+        const osmId = geocoded.osm_type + "/" + geocoded.osm_id
+        const obj = await OsmObject.DownloadObjectAsync(osmId)
+        const props = obj.asGeoJson().properties;
     
+        await r.sendElement(
+            new Combine([
+                new Table(["key","value"],
+                    Object.keys(props).map(k => [k, props[k]]))])
+        )
+    }
+        
     public async Run(r: ResponseSender, args: {  _: string }): Promise<void> {
         const id = args._;
         if (id === null || id === undefined || id === "") {
@@ -36,7 +37,7 @@ private async SendInfoAbout(r: ResponseSender, osmId: string){
         if (matched !== null) {
             const type = matched[4]
             const n = matched[5]
-            await this.SendInfoAbout(r, type + "/" + n);
+            await TagsCommand.SendInfoAbout(r, {osm_type: type , osm_id: n});
             return;
         }
 
@@ -44,7 +45,7 @@ private async SendInfoAbout(r: ResponseSender, osmId: string){
         if (matchedSimple !== null) {
             const type = matchedSimple[1]
             const n = matchedSimple[2]
-            await this.SendInfoAbout(r, type + "/" + n);
+            await TagsCommand.SendInfoAbout(r, {osm_type: type  , osm_id:  Number(n)});
             return;
         }
 
@@ -56,8 +57,7 @@ private async SendInfoAbout(r: ResponseSender, osmId: string){
         }
 
         const geocoded = geocodedList[0]
-        const osmId = geocoded.osm_type + "/" + geocoded.osm_id
-        await this.SendInfoAbout(r, osmId)
+       await TagsCommand.SendInfoAbout(r, geocoded)
     }
 
 }

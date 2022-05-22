@@ -26,6 +26,7 @@ import {Geocoding} from "../../MapComplete/Logic/Osm/Geocoding";
 import Translations from "../../MapComplete/UI/i18n/Translations";
 import Link from "../../MapComplete/UI/Base/Link";
 import Constants from "../../MapComplete/Models/Constants";
+import {TagsCommand} from "./tagsCommand";
 
 
 export class InfoCommand extends Command<{ _: string }> {
@@ -189,9 +190,7 @@ export class InfoCommand extends Command<{ _: string }> {
 
         const withLayer = results.filter(r => r?.layers.length > 0)
         if (withLayer.length === 0) {
-            await r.sendHtml(
-                `None of ${geocoded.length} results for <code>${args._}</code> match a mapcomplete layer...`,
-            )
+            await TagsCommand.SendInfoAbout(r, geocoded[0])
             return;
         }
 

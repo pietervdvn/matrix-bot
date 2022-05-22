@@ -69,11 +69,13 @@ export default class SearchCommand extends Command<{
         if (argsRaw.indexOf(" near ") > 0) {
             [layerId, search] = argsRaw.split(" near ")
             mode = "near";
-        } else if (argsRaw.indexOf(" in ")) {
+        } else if (argsRaw.indexOf(" in ") > 0) {
             [layerId, search] = argsRaw.split(" in ")
             mode = "in"
         } else {
-            await r.sendHtml("Sorry, I didn't understand your command as I didn't find a <code>near</code> or <code>in</code> in your search query")
+            await r.sendHtml(`<p>Sorry, I didn't understand your command as I didn't find a <code>near</code> or <code>in</code> in your search query.
+ Try something as <code>search drinking water in London</code>, <code>search friture in Brussels</code></p>
+ <p>Alternatively, try <code>info ${[args.layerid, args.verb, args._].join(" ").trim()}</code> to get info about a single object</p>`)
             return;
         }
 
@@ -87,7 +89,7 @@ export default class SearchCommand extends Command<{
         const overpass = new Overpass(new And(layer.preset?.tags ?? [layer.config.source.osmTags]), [], Constants.defaultOverpassUrls[1]);
 
         const layerTitle = r.text(layer.preset?.title ?? layer.config.name)
-        await r.sendNotice(`Searching ${layerTitle} ${mode} <code>${search}</code>...`)
+        await r.sendHtml(`Searching ${layerTitle} ${mode} <code>${search}</code>...`)
         const geocodedEntries = await Geocoding.Search(search)
         if (geocodedEntries.length === 0) {
             await r.sendNotice("Sorry, I couldn't find anything for <code>" + search + "</code>, so I can't search for " + layerTitle)

@@ -22,6 +22,8 @@ import SchemeCommand from "./commands/schemeCommand";
 import {DocumentationCommand} from "./commands/documentationCommand";
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from "fs";
 import SearchCommand from "./commands/searchCommand";
+import {ResponseSender} from "./ResponseSender";
+import WelcomeCommand from "./commands/WelcomeCommand";
 
 
 Utils.download = (url, headers?: any): Promise<any> => {
@@ -123,10 +125,8 @@ async function main(options: { accessToken?: string, username?: string, password
 
     client.on("room.joined", async (roomid, event) => {
         console.log("Joined room", roomid)
-        await client.sendMessage(roomid, {
-            msgtype: "m.text",
-            body: "Hi! I'm MapComplete-bot - a computer program that responds to some commands. To see a list of possible commands, just say 'help'",
-        })
+        const responseSender = new ResponseSender(client, roomid, undefined)
+        await new WelcomeCommand().RunCommand(responseSender, {_: ""})
     })
 
 
