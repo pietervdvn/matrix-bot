@@ -89,7 +89,7 @@ export default class SearchCommand extends Command<{
         const overpass = new Overpass(new And(layer.preset?.tags ?? [layer.config.source.osmTags]), [], Constants.defaultOverpassUrls[1]);
 
         const layerTitle = r.text(layer.preset?.title ?? layer.config.name)
-        await r.sendHtml(`Searching ${layerTitle} ${mode} <code>${search}</code>...`)
+        await r.sendHtml(`Searching ${layerTitle} ${mode} <code>${search}</code>...`, true)
         const geocodedEntries = await Geocoding.Search(search)
         if (geocodedEntries.length === 0) {
             await r.sendNotice("Sorry, I couldn't find anything for <code>" + search + "</code>, so I can't search for " + layerTitle)
@@ -153,13 +153,11 @@ export default class SearchCommand extends Command<{
                     " (" + feat.humanDistance + " away)"
                 ]);
             }));
-        await r.sendElement(
-            new Combine([
+        await r.sendElements(
                     "I found " + feats.length + " matching items.",
                     feats.length > 25 ? `<p><i>I'm only showing the 25 items closest to the <a href='https://mapcomplete.osm.be/${theme.id}?lat=${centerpoint.lat}&lon=${centerpoint.lon}&z=15' target='_blank'>searched location</a>.</i></p>`: undefined,
                     items
-                ]
-            ))
+            )
     }
 
 

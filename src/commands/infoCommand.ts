@@ -4,7 +4,6 @@ import LayoutConfig from "../../MapComplete/Models/ThemeConfig/LayoutConfig";
 import Combine from "../../MapComplete/UI/Base/Combine";
 import {ExtraFuncParams} from "../../MapComplete/Logic/ExtraFunctions";
 import {ResponseSender} from "../ResponseSender";
-import {DocumentationCommand} from "./documentationCommand";
 import {UIEventSource} from "../../MapComplete/Logic/UIEventSource";
 import {GeoOperations} from "../../MapComplete/Logic/GeoOperations";
 import MetaTagging from "../../MapComplete/Logic/MetaTagging";
@@ -13,7 +12,6 @@ import {SubstitutedTranslation} from "../../MapComplete/UI/SubstitutedTranslatio
 import {FixedUiElement} from "../../MapComplete/UI/Base/FixedUiElement";
 import {OH} from "../../MapComplete/UI/OpeningHours/OpeningHours";
 import BaseUIElement from "../../MapComplete/UI/BaseUIElement";
-import Img from "../../MapComplete/UI/Base/Img";
 import Table from "../../MapComplete/UI/Base/Table";
 import {AllKnownLayouts} from "../../MapComplete/Customizations/AllKnownLayouts";
 import {AllTagsPanel} from "../../MapComplete/UI/AllTagsPanel";
@@ -27,17 +25,12 @@ import Translations from "../../MapComplete/UI/i18n/Translations";
 import Link from "../../MapComplete/UI/Base/Link";
 import Constants from "../../MapComplete/Models/Constants";
 import {TagsCommand} from "./tagsCommand";
+import {Utils} from "../../MapComplete/Utils";
 
 
 export class InfoCommand extends Command<{ _: string }> {
 
     private _countryCoder: CountryCoder;
-    private static config = (() => {
-        WikipediaBox.configuration.onlyFirstParagaph = true
-        WikipediaBox.configuration.addHeader = true
-
-        return 42
-    })();
 
     constructor(countryCoder: CountryCoder) {
         super("info", "Gets info about an OSM-object. Either give an id OR a search string; the objects are interpreted and known values are shown.",
@@ -108,7 +101,23 @@ export class InfoCommand extends Command<{ _: string }> {
 
         r.set("multi_apply", undefined)
         r.set("reviews", undefined)
-        r.set("image_carousel", undefined)
+        r.set("image_carousel", undefined),
+        r.set("images", undefined)
+        
+        {
+            const wikidata = tags["wikidata"] ?? tags["wikipedia"];
+            if(wikidata == undefined || wikidata == ""){
+                r.set("wikipedia",undefined)
+            }
+            const wikidatas: string[] =
+                Utils.NoEmpty(wikidata?.split(";")?.map(wd => wd.trim()) ?? [])
+            r.set("wikipedia",
+                new WikipediaBox(wikidatas,{
+                    addHeader: true,
+                    firstParagraphOnly: true
+                } )
+            )
+        }
 
         return r
     }
@@ -166,15 +175,11 @@ export class InfoCommand extends Command<{ _: string }> {
         }
 
 
-        await r.sendElement(
-            new Combine([
+        await r.sendElements(
                 `Found ${geocoded.length} results for <code>${args._}</code>, fetching details about them...`,
                 new Table([],
-                    geocoded.map(r => {
-                        return [new Link(r.osm_type + "/" + r.osm_id, "https://osm.org/" + r.osm_type + "/" + r.osm_id, true), new FixedUiElement(r.display_name)];
-                    })
+                    geocoded.map(r => [new Link(r.osm_type + "/" + r.osm_id, "https://osm.org/" + r.osm_type + "/" + r.osm_id, true), new FixedUiElement(r.display_name)])
                 )
-            ])
         )
 
 
@@ -199,9 +204,7 @@ export class InfoCommand extends Command<{ _: string }> {
         const [lon, lat] = GeoOperations.centerpointCoordinates(geojson)
         const countries = await this._countryCoder.GetCountryCodeAsync(lon, lat)
         geojson.properties["_country"] = countries[0]
-        await r.sendElement(new Combine([
-            InfoCommand.render(geojson, el.layers),
-        ]))
+        await r.sendElements(InfoCommand.render(geojson, el.layers))
     }
 
     private static render(geojson, layers: LayerConfig[]): BaseUIElement {
@@ -284,7 +287,7 @@ export class InfoCommand extends Command<{ _: string }> {
 
     private async SendInfoAbout(r: ResponseSender, id: string): Promise<void> {
 
-        await r.sendNotice(`Fetching data about ${id}...`)
+        await r.sendNotice(`Fetching data about ${id}...`, true)
         const obj = await OsmObject.DownloadObjectAsync(id);
         if (obj === undefined) {
             await r.sendHtml(`Could not download <code>${id}</code>`);

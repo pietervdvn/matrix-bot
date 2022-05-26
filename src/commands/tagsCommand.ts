@@ -1,6 +1,5 @@
 import Table from "../../MapComplete/UI/Base/Table";
 import {Command} from "../command";
-import Combine from "../../MapComplete/UI/Base/Combine";
 import {OsmObject} from "../../MapComplete/Logic/Osm/OsmObject";
 import {Geocoding} from "../../MapComplete/Logic/Osm/Geocoding";
 import {ResponseSender} from "../ResponseSender";
@@ -20,11 +19,9 @@ export class TagsCommand extends Command<{ _: string }> {
         const obj = await OsmObject.DownloadObjectAsync(osmId)
         const props = obj.asGeoJson().properties;
     
-        await r.sendElement(
-            new Combine([
+        await r.sendElements(
                 new Table(["key","value"],
-                    Object.keys(props).map(k => [k, props[k]]))])
-        )
+                    Object.keys(props).map(k => [k, props[k]]))        )
     }
         
     public async Run(r: ResponseSender, args: {  _: string }): Promise<void> {
@@ -49,7 +46,7 @@ export class TagsCommand extends Command<{ _: string }> {
             return;
         }
 
-        await r.sendHtml("<code>" + id + "</code> doesn't seem to be a valid OSM-id - searching worldwide instead for " + args._)
+        await r.sendHtml("<code>" + id + "</code> doesn't seem to be a valid OSM-id - searching worldwide instead for " + args._+"...", true)
         const geocodedList = await Geocoding.Search(args._)
         if ((geocodedList?.length ?? 0) === 0) {
             await r.sendHtml("Nothing found for " + args._)

@@ -24,10 +24,11 @@ import {existsSync, mkdirSync, readFileSync, writeFileSync} from "fs";
 import SearchCommand from "./commands/searchCommand";
 import {ResponseSender} from "./ResponseSender";
 import WelcomeCommand from "./commands/WelcomeCommand";
+import Wikicommand from "./commands/Wikicommand";
 
 
-Utils.download = (url, headers?: any): Promise<any> => {
-    return new Promise((resolve, reject) => {
+Utils.externalDownloadFunction = (url, headers?: any) => {
+    return new Promise<{ content: string } | { redirect: string }>((resolve, reject) => {
         try {
             headers = headers ?? {}
             headers.accept = "application/json"
@@ -51,13 +52,11 @@ Utils.download = (url, headers?: any): Promise<any> => {
                 });
 
                 res.addListener('end', function () {
-                    const result = parts.join("")
-                    try {
-                        resolve(JSON.parse(result))
-                    } catch (e) {
-                        console.error("Could not parse the following as JSON:", result)
-                        resolve(undefined)
+                    if(res.statusCode === 302){
+                        resolve({redirect: res.headers["location"]})
+                        return
                     }
+                    resolve({content: parts.join("")})
                 });
             })
         } catch (e) {
@@ -97,6 +96,7 @@ async function main(options: { accessToken?: string, username?: string, password
         new SearchCommand(),
         new TagsCommand(),
         new DocumentationCommand(),
+        new Wikicommand(),
         new SetLanguageCommand(),
         new SchemeCommand(),
         new DreamCommand(),

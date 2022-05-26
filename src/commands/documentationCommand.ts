@@ -34,16 +34,14 @@ export class DocumentationCommand extends Command<{ id: string }> {
         args.id = args.id?.trim()
 
         if (args.id === undefined) {
-            r.sendElement(
-                new Combine([
+            r.sendElements(
                         "Give a layer id to get information about a layer. Known layers are:",
                         new List(AllKnownLayouts.AllPublicLayers()
                             .filter(l => Constants.priviliged_layers.indexOf(l.id) < 0 && l.source.geojsonSource === undefined)
                             .map(l =>
                                 `<code>${l.id}</code> ${l.description?.txt ?? l.name?.txt ?? ""}`
                             ))
-                    ]
-                ))
+                )
             return;
         }
         const th = AllKnownLayouts.allKnownLayouts.get(args.id)
@@ -61,11 +59,9 @@ export class DocumentationCommand extends Command<{ id: string }> {
         const urlParamDocs = QueryParameterDocumentation.UrlParamDocs()
         const urlParamDoc = urlParamDocs[args.id];
         if (urlParamDoc !== undefined) {
-            await r.sendElement(
-                new Combine([
+            await r.sendElements(
                     new Title("URL-parameter <code>" + args.id + "</code>"),
-                    BotUtils.MdToElement(urlParamDoc)
-                ]))
+                    BotUtils.MdToElement(urlParamDoc))
             return
         }
 
@@ -78,7 +74,7 @@ export class DocumentationCommand extends Command<{ id: string }> {
         const sortedTheme = Utils.sortedByLevenshteinDistance(args.id, Array.from(AllKnownLayouts.allKnownLayouts.keys()), l => l).slice(0, 5)
         const qps = Object.keys(QueryParameters.documentation).slice(0,5);
         const sortedUrlParams = Utils.sortedByLevenshteinDistance(args.id, qps, qp => qp)
-        await r.sendElement(new Combine([
+        await r.sendElements(
             "No layer found with name <code>" + args.id + "</code>. Perhaps you meant one of: ",
             new List(sorted.map(l => `<code>${l.id}</code>`)),
             "No theme found with name <code>" + args.id + "</code>. Perhaps you meant one of: ",
@@ -86,7 +82,7 @@ export class DocumentationCommand extends Command<{ id: string }> {
             "No URL-parameter found with name <code>" + args.id + "</>. Perhaps you meant one of: ",
             new List(sortedUrlParams.map(l => `<code>${l}</code>`))
 
-        ]))
+        )
         return
     }
 }

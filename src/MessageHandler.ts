@@ -126,7 +126,7 @@ export class MessageHandler {
                     new Combine([
                         msg,
                         "<p>The error is <code>"+e.message+"</code></p>",
-                      new List(  JSON.stringify(e.stack).split("\n"))
+                      new List(  JSON.stringify(e.stack).split("\\n"))
                     ]))
             } else {
                 await r.sendNotice(msg)

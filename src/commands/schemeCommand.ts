@@ -47,7 +47,7 @@ export default class SchemeCommand extends Command<{
     } & { _: string }): Promise<any> {
 
         const items = SchemeCommand.SchemeInfo(args.key)
-        await r.sendElement(new Combine(items).SetClass("lex flex-col"))
+        await r.sendElements(...items)
     }
 
 }

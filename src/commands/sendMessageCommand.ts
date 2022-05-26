@@ -2,7 +2,6 @@ import {MessageHandler} from "../MessageHandler";
 import {Command} from "../command";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
-import Combine from "../../MapComplete/UI/Base/Combine";
 import List from "../../MapComplete/UI/Base/List";
 
 export default class SendMessageCommand extends Command<{
@@ -40,6 +39,7 @@ export default class SendMessageCommand extends Command<{
             return
         }
 
+        await r.sendHtml(`Executing <code>${args._}</code> and sending the result to <b>${args.to}</b>...`, true)
         try {
             let targetName = BotUtils.asUserId(args.to)
 
@@ -52,13 +52,14 @@ export default class SendMessageCommand extends Command<{
             }
 
             const result = await this._executor.executeCommand(args._, targetSender);
-            await targetSender.sendNotice("I sent you this message because " + r.sender + " requested me to send this", false)
-            await r.sendNotice("I delivered the message to "+targetName)
+            await targetSender.sendHtml(`I sent you this message because <b>${r.sender}</b> requested me to send this with <code>${args._}</code>`)
+            await r.sendNotice("I delivered the message to " + targetName)
             return result
         } catch (e) {
-            await r.sendElement(new Combine(["I couldn't execute <code>" + args._ + "</code> due to " + e.message, new List(e.stack.split("\n"))]))
+            await r.sendElements(
+                "I couldn't execute <code>" + args._ + "</code> due to " + e.message,
+                new List(e.stack.split("\n")))
         }
     }
-
 
 }

@@ -36,30 +36,27 @@ export class HelpCommand extends Command<{ cmd?: string }> {
             for (const key in cmd.args) {
                 argsDocs.push([key, cmd.args[key]])
             }
-            await r.sendElement(
-                new Combine([
+            await r.sendElements(
                     new Title(cmd.cmd,4),
                     cmd.documentation,
                     cmd.mayExecute(r) ? "": "<b>You currently don't have sufficient permissions to run this command.</b> Ask "+RoomSettingsTracker.usersWithRole("roles").join(", ")+" to give you sufficient permissions",
                     new Table([],
                         argsDocs)
-                ]))
-
+                )
             return;
         }
         
         
         const cmds: Command<any>[] = this._allCommands.filter(c => r.isAdmin || !c.options?.adminOnly)
-        await r.sendElement(
-            new Combine(["Hi! I'm MapComplete-bot "+this._version+" (built upon MapComplete "+Constants.vNumber+").",
-            "Send a command to me and I'll answer with something useful: give me a command via a private message or put <code>!</code> before the command in a public room.",
+        await r.sendElements(
+            "<p>Hi! I'm MapComplete-bot "+this._version+" (built upon MapComplete "+Constants.vNumber+").</p>",
+            "<p>Send a command to me and I'll answer with something useful: give me a command via a private message or put <code>!</code> before the command in a public room.</p>",
                 "My supported commands are:",
                 new List(cmds
                     .filter(cmd => cmd.mayExecute(r))
                     .map(cmd => new Combine([
                     "<b>"+cmd.cmd+"</b>", ": ", cmd.documentation, cmd.options?.adminOnly ? " (<i>Priviliged command</i>)" : ""
-                ])))
-            ]).SetClass("flex flex-col"))
+                ]))))
     }
 
 }
