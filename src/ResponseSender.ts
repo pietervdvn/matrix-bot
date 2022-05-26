@@ -10,8 +10,8 @@ export class ResponseSender {
     public roomId: string;
     public sender: string;
     public isAdmin: boolean;
-    private toBeCleaned: string[] = [];
     public readonly startTime: Date = new Date()
+    private toBeCleaned: string[] = [];
 
     constructor(client: MatrixClient, roomId: string, sender: string) {
         this.client = client;
@@ -42,6 +42,17 @@ export class ResponseSender {
             svg.parentElement.removeChild(svg)
         }
 
+        const imgs = Array.from(el.getElementsByTagName('img'))
+        for (const img of imgs) {
+            // @ts-ignore
+            const textmode = img.attributes?.textmode?.value
+            if (textmode) {
+                const span = document.createElement('span');
+                span.innerHTML = textmode
+                img.parentElement.replaceChild(span, img)
+            }
+        }
+
         if (el.classList.contains("internal-code")) {
             changeTag("code")
         } else if (el.classList.contains("bold")) {
@@ -66,6 +77,7 @@ export class ResponseSender {
     public async sendElements(...els: (BaseUIElement | string)[]) {
         await this.sendElement(new Combine(els), false)
     }
+
     public async sendElement(el: BaseUIElement, ephemeral: boolean = false) {
         const previousLanguage = Locale.language.data
         const targetLanguage = RoomSettingsTracker.settingsFor(this.roomId).language?.data
@@ -94,27 +106,27 @@ export class ResponseSender {
             return
         }
         let batch = "";
-        const eventIds : string[] = []
+        const eventIds: string[] = []
         for (const part of allParts) {
             const toSend = part.outerHTML
-            if(batch.length + toSend.length > 16000){
-                const id = await this.sendHtml(batch,false)
+            if (batch.length + toSend.length > 16000) {
+                const id = await this.sendHtml(batch, false)
                 eventIds.push(id)
                 batch = "";
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
-            if(toSend.length > 16000){
+            if (toSend.length > 16000) {
                 await this.sendNotice("Received a really big element here - skipping", false);
                 continue
             }
-            
+
             batch += toSend;
         }
-        
-        if(batch.length > 0){
-           eventIds.push( await this.sendHtml(batch, false))
+
+        if (batch.length > 0) {
+            eventIds.push(await this.sendHtml(batch, false))
         }
-        if(ephemeral){
+        if (ephemeral) {
             this.toBeCleaned.push(...eventIds)
         }
     }
@@ -132,7 +144,7 @@ export class ResponseSender {
             msg = "Sorry, I couldn't generate a response as I wanted to say to much."
         }
 
-       return await this.cleanPrevious(this.client.sendMessage(this.roomId, {
+        return await this.cleanPrevious(this.client.sendMessage(this.roomId, {
             msgtype: "m.text",
             format: "org.matrix.custom.html",
             body: msg,
@@ -141,33 +153,33 @@ export class ResponseSender {
     }
 
     public async sendNotice(msg: string, ephemeral: false | boolean = false): Promise<string> {
-       
-       return await this.cleanPrevious(
+
+        return await this.cleanPrevious(
             this.client.sendMessage(this.roomId, {
                 msgtype: "m.notice",
                 body: msg,
             }),
             ephemeral
         )
-       
+
     }
 
-    private async cleanPrevious(event: Promise<string>, ephemeral: boolean): Promise<string> {
-        const id = await event;
-        while(this.toBeCleaned.length > 0){
-            this.client.redactEvent(this.roomId, this.toBeCleaned.shift(), "Cleaning up...")
-        }
-        if(ephemeral){
-            this.toBeCleaned.push(id)
-        }
-        return id;
-    }
-
-    text(translation: Translation) {
-        return translation.textFor(this.roomSettings().language.data);
+    text(translation: Translation): string | undefined {
+        return translation?.textFor(this.roomSettings().language.data);
     }
 
     isDm() {
         return this.client.dms.isDm(this.roomId)
+    }
+
+    private async cleanPrevious(event: Promise<string>, ephemeral: boolean): Promise<string> {
+        const id = await event;
+        while (this.toBeCleaned.length > 0) {
+            this.client.redactEvent(this.roomId, this.toBeCleaned.shift(), "Cleaning up...")
+        }
+        if (ephemeral) {
+            this.toBeCleaned.push(id)
+        }
+        return id;
     }
 }

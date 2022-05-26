@@ -278,8 +278,14 @@ export class InfoCommand extends Command<{ _: string }> {
             editButton = "No mapcomplete themes support this element"
         }
 
+        const props = geojson.properties
         return new Combine([
-            new Link(new Title(r(baselayer.title)), "https://osm.org/" + geojson.properties.id, true),
+            new Title(new Combine([
+                new Link(r(baselayer.title), "https://osm.org/" + geojson.properties.id, true),
+                " ",
+                ...layers[0].titleIcons.map(icon => icon.GetRenderValue(props)?.Subs(props)),
+
+            ])),
             results.length > 0 ? new Combine(results) : "No relevant information yet",
             editButton
         ])

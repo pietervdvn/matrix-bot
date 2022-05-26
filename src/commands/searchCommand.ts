@@ -147,9 +147,12 @@ export default class SearchCommand extends Command<{
 
         const items = new List(
             feats.slice(0, 25).map(feat => {
-                const title = r.text(layer.title.GetRenderValue(feat.geojson.properties).Subs(feat.geojson.properties));
+                const props = feat.geojson.properties
+                const title = r.text(layer.title.GetRenderValue(props).Subs(props));
                 return new Combine([
                     new Link(title, `https://mapcomplete.osm.be/${theme.id}?z=${layer.minzoom}#${feat.geojson.properties.id}`, true),
+                    " ",
+                    ...layer.titleIcons.map(icon => r.text(icon.GetRenderValue(props)?.Subs(props))),
                     " (" + feat.humanDistance + " away)"
                 ]);
             }));
