@@ -43,7 +43,9 @@ export default class Wikicommand extends Command<{
         ].map(candidate => candidate.toLowerCase())
         const exactMatches = searchResults.filter(searchResult => searchCandidates.some(candidate => candidate === searchResult.title.toLowerCase()));
         const exactMatchesWithLanguage = exactMatches.find(em => em.title.toLowerCase().startsWith(r.roomLanguage()+":"))
-        if (searchResults.length > 1 && exactMatches.length == 0) {
+        if(exactMatches.length > 0){
+            await r.sendNotice("Found a matching wiki page: "+(exactMatchesWithLanguage ?? exactMatches[0]).title, true)
+        }else if (searchResults.length > 1 ) {
             await r.sendElements(`Got ${searchResults.length} results for search query <code>${args.search}</code>:`, new List(
                 searchResults.map(r => new Combine([
                     new Link( "<b>" + r.title + "</b>", r.url),
