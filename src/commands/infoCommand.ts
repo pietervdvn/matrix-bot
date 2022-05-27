@@ -26,6 +26,9 @@ import Link from "../../MapComplete/UI/Base/Link";
 import Constants from "../../MapComplete/Models/Constants";
 import {TagsCommand} from "./tagsCommand";
 import {Utils} from "../../MapComplete/Utils";
+import FeaturePipelineState from "../../MapComplete/Logic/State/FeaturePipelineState";
+import {DefaultGuiState} from "../../MapComplete/UI/DefaultGuiState";
+import ScriptUtils from "../../MapComplete/scripts/ScriptUtils";
 
 
 export class InfoCommand extends Command<{ _: string }> {
@@ -41,8 +44,9 @@ export class InfoCommand extends Command<{ _: string }> {
         this._countryCoder = countryCoder;
     }
 
-    private static fallbackMappings(tags: any): Map<string, BaseUIElement> {
-        const r = new Map<string, BaseUIElement>();
+    private static fallbackMappings(tags: any, requestRedraw: () => Promise<void>):
+        Map<string, BaseUIElement | ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)> {
+        const r = new Map<string, BaseUIElement |  ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)>();
 
         {
             let ohViz: BaseUIElement = new FixedUiElement("No opening hours are known.")
@@ -101,22 +105,38 @@ export class InfoCommand extends Command<{ _: string }> {
 
         r.set("multi_apply", undefined)
         r.set("reviews", undefined)
-        r.set("image_carousel", undefined),
+        r.set("image_carousel", undefined)
+        r.set("nearby_images", undefined)
         r.set("images", undefined)
         
-        {
-            const wikidata = tags["wikidata"] ?? tags["wikipedia"];
-            if(wikidata == undefined || wikidata == ""){
-                r.set("wikipedia",undefined)
-            }
-            const wikidatas: string[] =
-                Utils.NoEmpty(wikidata?.split(";")?.map(wd => wd.trim()) ?? [])
-            r.set("wikipedia",
-                new WikipediaBox(wikidatas,{
+        { r.set("wikipedia",
+
+            (_, __, args, ___) => {
+
+                const keys = (args[0] ?? "wikidata;wikipedia").split(";").map(k => k.trim())
+                const values = keys.map(key => tags[key])[0]
+                if(values == undefined || values == ""){
+                    r.set("wikipedia",undefined)
+                }
+                const wikidatas: string[] =
+                    Utils.NoEmpty(values?.split(";")?.map(wd => wd.trim()) ?? [])
+
+                return new Table([],
+                    [[new WikipediaBox(wikidatas, {
                     addHeader: true,
-                    firstParagraphOnly: true
-                } )
+                    firstParagraphOnly: true,
+                    currentState: new UIEventSource<"loading" | "loaded" | "error">("loading").addCallbackAndRun(state => {
+                        if(state === "loaded"){
+                            requestRedraw().catch(e => console.error(e))
+                        }
+                    }),
+                    noImages: true
+                })]]);
+            }
+            
+            
             )
+           
         }
 
         return r
@@ -146,7 +166,7 @@ export class InfoCommand extends Command<{ _: string }> {
 
 
     public async Run(r: ResponseSender, args: {  _: string }): Promise<void> {
-        const id = args._;
+        let id = args._.trim();
         if (id === null || id === undefined || id === "") {
             await r.sendNotice("Please, provide a search term of id to use this command")
             return
@@ -155,19 +175,23 @@ export class InfoCommand extends Command<{ _: string }> {
         if (matched !== null) {
             const type = matched[4]
             const n = matched[5]
-            await this.SendInfoAbout(r, type + "/" + n);
-            return;
+            id = type+"/"+n;
         }
 
         const matchedSimple = id.match(/(node|way|relation)\/([0-9]+)/)
         if (matchedSimple !== null) {
-            const type = matchedSimple[1]
-            const n = matchedSimple[2]
-            await this.SendInfoAbout(r, type + "/" + n);
+            await r.sendNotice(`Fetching data about ${id}...`, true)
+            const obj = await OsmObject.DownloadObjectAsync(id);
+            if (obj === undefined) {
+                await r.sendHtml(`Could not download <code>${id}</code>`);
+                return;
+            }
+            const geojson = obj.asGeoJson();
+            await this.SendInfoAbout(r, geojson);
             return;
         }
 
-        await r.sendHtml("<code>" + id + "</code> doesn't seem to be a valid OSM-id - searching worldwide instead for " + args._)
+        await r.sendHtml("<code>" + id + "</code> doesn't seem to be a valid OSM-id - searching worldwide instead for " + args._, true)
         const geocoded = await Geocoding.Search(args._)
         if ((geocoded?.length ?? 0) === 0) {
             await r.sendHtml("Nothing found for " + args._)
@@ -175,7 +199,7 @@ export class InfoCommand extends Command<{ _: string }> {
         }
 
 
-        await r.sendElements(
+        await r.sendElementsEphemeral(
                 `Found ${geocoded.length} results for <code>${args._}</code>, fetching details about them...`,
                 new Table([],
                     geocoded.map(r => [new Link(r.osm_type + "/" + r.osm_id, "https://osm.org/" + r.osm_type + "/" + r.osm_id, true), new FixedUiElement(r.display_name)])
@@ -201,19 +225,19 @@ export class InfoCommand extends Command<{ _: string }> {
 
         const el = withLayer[0]
         const geojson = el.obj.asGeoJson();
-        const [lon, lat] = GeoOperations.centerpointCoordinates(geojson)
-        const countries = await this._countryCoder.GetCountryCodeAsync(lon, lat)
-        geojson.properties["_country"] = countries[0]
-        await r.sendElements(InfoCommand.render(geojson, el.layers))
+        this.SendInfoAbout(r, geojson)
+
     }
 
-    private static render(geojson, layers: LayerConfig[]): BaseUIElement {
+    private static render(geojson, layers: LayerConfig[], requestRedraw: () => Promise<void>): BaseUIElement {
         function r(tr: TagRenderingConfig) {
             if (tr === undefined) {
                 return undefined;
             }
-            return new SubstitutedTranslation(tr.GetRenderValue(geojson.properties), new UIEventSource<any>(geojson.properties), undefined,
-                InfoCommand.fallbackMappings(geojson.properties)
+            return new SubstitutedTranslation(tr.GetRenderValue(geojson.properties), 
+                new UIEventSource<any>(geojson.properties), 
+                undefined,
+                InfoCommand.fallbackMappings(geojson.properties, requestRedraw)
             )
         }
 
@@ -291,28 +315,37 @@ export class InfoCommand extends Command<{ _: string }> {
         ])
     }
 
-    private async SendInfoAbout(r: ResponseSender, id: string): Promise<void> {
-
-        await r.sendNotice(`Fetching data about ${id}...`, true)
-        const obj = await OsmObject.DownloadObjectAsync(id);
-        if (obj === undefined) {
-            await r.sendHtml(`Could not download <code>${id}</code>`);
-            return;
-        }
-        const geojson = obj.asGeoJson();
+    private async SendInfoAbout(r: ResponseSender, geojson: any): Promise<void> {
         try {
             const layers = InfoCommand.matchingLayers(geojson.properties)
 
-            let rendered: BaseUIElement = new AllTagsPanel(new UIEventSource(geojson.properties))
 
-            if (layers.length > 0) {
-                const [lon, lat] = GeoOperations.centerpointCoordinates(geojson)
-
-                const countries = await this._countryCoder.GetCountryCodeAsync(lon, lat)
-                geojson.properties["_country"] = countries[0].toLowerCase()
-                rendered = InfoCommand.render(geojson, layers)
+            if (layers.length <= 0) {
+                await r.sendElement(new AllTagsPanel(new UIEventSource(geojson.properties)))
+                return;
             }
-            await r.sendElement(rendered)
+            
+            const [lon, lat] = GeoOperations.centerpointCoordinates(geojson)
+
+            const countries = await this._countryCoder.GetCountryCodeAsync(lon, lat)
+            geojson.properties["_country"] = countries[0].toLowerCase()
+            let element : BaseUIElement = undefined;
+            let previousIds: string[] = []
+            async function sendElement(): Promise<void> {
+                if(element === undefined){
+                    return
+                }
+      
+                const newElements = await r.sendElement(element)
+                while(previousIds.length > 0){
+                    await r.client.redactEvent(r.roomId, previousIds.shift())
+                }
+                previousIds.push(...newElements)
+                await r.sleep(100)
+            }
+            element = InfoCommand.render(geojson, layers, sendElement)
+            sendElement()
+            
         } catch (e) {
             console.log(e.toString())
         }

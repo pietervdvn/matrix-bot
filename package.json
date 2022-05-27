@@ -22,7 +22,7 @@
   "dependencies": {
     "@types/showdown": "^2.0.0",
     "config": "^3.3.6",
-    "doctest-ts-improved": "^0.8.6",
+    "doctest-ts-improved": "^0.8.7",
     "escape-html": "^1.0.3",
     "fake-dom": "^1.0.4",
     "https": "^1.0.0",

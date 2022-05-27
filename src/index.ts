@@ -27,7 +27,13 @@ import WelcomeCommand from "./commands/WelcomeCommand";
 import Wikicommand from "./commands/Wikicommand";
 
 
-Utils.externalDownloadFunction = (url, headers?: any) => {
+/**
+ * Injected into 'Utils'
+ * 
+ * const html = await download("https://example.org")
+ * html["content"].startsWith("<!doctype html>") // => true
+ */
+async function download(url, headers?: any) {
     return new Promise<{ content: string } | { redirect: string }>((resolve, reject) => {
         try {
             headers = headers ?? {}
@@ -65,8 +71,12 @@ Utils.externalDownloadFunction = (url, headers?: any) => {
     })
 }
 
+Utils.externalDownloadFunction = download;
+
+
+
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.1.3"
+    const version = "0.2.0"
     console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";
@@ -167,7 +177,9 @@ if (fakedom === undefined || window === undefined) {
 
 
 const [command, username, password] = process.argv.slice(2)
-if(existsSync("./storage/access_token.json")){
+if(process.argv[1].endsWith("mocha")){
+    console.log("Argv[1] ends with mocha, assuming test environment; not starting the bot")
+}else if(existsSync("./storage/access_token.json")){
    const accessToken : string = readFileSync("./storage/access_token.json", "utf8")
     console.log("Loaded access token from disk")
    main({accessToken}) 

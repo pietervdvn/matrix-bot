@@ -13,6 +13,8 @@ export class ResponseSender {
     public readonly startTime: Date = new Date()
     private toBeCleaned: string[] = [];
 
+    private static MAX_LENGTH = 16000;
+    
     constructor(client: MatrixClient, roomId: string, sender: string) {
         this.client = client;
         this.roomId = roomId;
@@ -55,7 +57,9 @@ export class ResponseSender {
 
         if (el.classList.contains("internal-code")) {
             changeTag("code")
-        } else if (el.classList.contains("bold")) {
+        } else if (el.classList.contains("quote")){
+            changeTag("quote")
+        }else if (el.classList.contains("bold")) {
             changeTag("bold")
         } else if (el.classList.contains("italic")) {
             changeTag("italic")
@@ -78,7 +82,11 @@ export class ResponseSender {
         await this.sendElement(new Combine(els), false)
     }
 
-    public async sendElement(el: BaseUIElement, ephemeral: boolean = false) {
+    public async sendElementsEphemeral(...els: (BaseUIElement | string)[]) {
+        await this.sendElement(new Combine(els), true)
+    }
+
+    public async sendElement(el: BaseUIElement, ephemeral: boolean = false): Promise<string[]> {
         const previousLanguage = Locale.language.data
         const targetLanguage = RoomSettingsTracker.settingsFor(this.roomId).language?.data
         if (targetLanguage !== undefined) {
@@ -94,7 +102,7 @@ export class ResponseSender {
         const allParts: Element[] = []
         do {
             const toSend = htmlQueue.shift();
-            if (toSend.outerHTML.length > 16384) {
+            if (toSend.outerHTML.length > ResponseSender.MAX_LENGTH) {
                 htmlQueue.push(...Array.from(toSend.children))
             } else {
                 allParts.push(toSend)
@@ -109,13 +117,13 @@ export class ResponseSender {
         const eventIds: string[] = []
         for (const part of allParts) {
             const toSend = part.outerHTML
-            if (batch.length + toSend.length > 16000) {
+            if (batch.length + toSend.length > ResponseSender.MAX_LENGTH) {
                 const id = await this.sendHtml(batch, false)
                 eventIds.push(id)
                 batch = "";
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
-            if (toSend.length > 16000) {
+            if (toSend.length > ResponseSender.MAX_LENGTH) {
                 await this.sendNotice("Received a really big element here - skipping", false);
                 continue
             }
@@ -129,18 +137,29 @@ export class ResponseSender {
         if (ephemeral) {
             this.toBeCleaned.push(...eventIds)
         }
+        return eventIds;
     }
 
     public roomSettings(): RoomSettings | undefined {
         return RoomSettingsTracker.settingsFor(this.roomId)
     }
+    
+    public roomLanguage(): string {
+        return RoomSettingsTracker.settingsFor(this.roomId)?.language?.data ?? "en"
+    }
+    
+    public sleep(ms: number): Promise<void>{
+        return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+        });
+    }
 
     public async sendHtml(msg, ephemeral: boolean = false): Promise<string> {
-        if (msg.length > 8000 && !this.client.dms.isDm(this.roomId)) {
+        if (msg.length > ResponseSender.MAX_LENGTH && !this.client.dms.isDm(this.roomId)) {
             return await this.sendNotice("Sorry, this message is too long for a public room - send me a direct message instead", false)
         }
 
-        if (msg.length > 16384) {
+        if (msg.length > ResponseSender.MAX_LENGTH) {
             msg = "Sorry, I couldn't generate a response as I wanted to say to much."
         }
 
