@@ -5,6 +5,8 @@ import {RoomSettings, RoomSettingsTracker} from "./RoomSettings";
 import {Translation} from "../MapComplete/UI/i18n/Translation";
 import Combine from "../MapComplete/UI/Base/Combine";
 import Translations from "../MapComplete/UI/i18n/Translations";
+import Link from "../MapComplete/UI/Base/Link";
+import LinkToWeblate from "../MapComplete/UI/Base/LinkToWeblate";
 
 export class ResponseSender {
     public client: MatrixClient;
@@ -209,5 +211,9 @@ export class ResponseSender {
             this.toBeCleaned.push(id)
         }
         return id;
+    }
+    
+    public TranslationLink(language = undefined): BaseUIElement {
+ return       new Link(Translations.t.matrixbot.commands.language.helpTranslating, LinkToWeblate.hrefToWeblateZen(language ?? this.roomLanguage(), "core", "matrixbot"))
     }
 }

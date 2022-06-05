@@ -5,10 +5,9 @@ import * as used_languages from "../../MapComplete/assets/generated/used_languag
 import List from "../../MapComplete/UI/Base/List";
 import {Paragraph} from "../../MapComplete/UI/Base/Paragraph";
 import Combine from "../../MapComplete/UI/Base/Combine";
-import LinkToWeblate from "../../MapComplete/UI/Base/LinkToWeblate";
 import Translations from "../../MapComplete/UI/i18n/Translations";
-import Link from "../../MapComplete/UI/Base/Link";
 import * as native_languages from "../../MapComplete/assets/language_native.json"
+
 export class SetLanguageCommand extends Command<"language"> {
 
     constructor() {
@@ -26,7 +25,7 @@ export class SetLanguageCommand extends Command<"language"> {
             return native_languages[lang] ?? lang
         }
         if(args.language === "" || args.language === undefined){
-            await r.sendElements( t.currentLanguage.Subs({language: native( r.roomLanguage())}))
+            await r.sendElements( t.currentLanguage.Subs({language: native( r.roomLanguage())}), r.TranslationLink())
             return 
         }
         const valid = used_languages.languages.some(l => l === args.language)
@@ -44,9 +43,8 @@ export class SetLanguageCommand extends Command<"language"> {
             return;
         }
         RoomSettingsTracker.settingsFor(r.roomId).language.setData(args.language)
-        const link = LinkToWeblate.hrefToWeblateZen(args.language, "core", "matrixbot")
         await r.sendElements(t.hasBeenSet.Subs({language: native(args.language)}),
-            new Link(t.helpTranslating, link)
+            r.TranslationLink()
             )
     }
 

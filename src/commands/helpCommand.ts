@@ -60,7 +60,8 @@ export class HelpCommand extends Command<"cmd"> {
                 .filter(cmd => cmd.mayExecute(r))
                 .map(cmd => new Combine([
                     "<b>" + cmd.cmd + "</b>", ": ", cmd.documentation, cmd.options?.adminOnly ? " (<i>" + t.priviligedComand + "</i>)" : ""
-                ]))))
+                ]))),
+            r.TranslationLink())
     }
 
 }
