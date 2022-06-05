@@ -4,6 +4,7 @@ import Locale from "../MapComplete/UI/i18n/Locale";
 import {RoomSettings, RoomSettingsTracker} from "./RoomSettings";
 import {Translation} from "../MapComplete/UI/i18n/Translation";
 import Combine from "../MapComplete/UI/Base/Combine";
+import Translations from "../MapComplete/UI/i18n/Translations";
 
 export class ResponseSender {
     public client: MatrixClient;
@@ -79,7 +80,11 @@ export class ResponseSender {
     }
 
     public async sendElements(...els: (BaseUIElement | string)[]) {
-        await this.sendElement(new Combine(els), false)
+        const interspersed = []
+        for (const el of els) {
+            interspersed.push(el, " ")
+        }
+        await this.sendElement(new Combine(interspersed), false)
     }
 
     public async sendElementsEphemeral(...els: (BaseUIElement | string)[]) {
@@ -88,9 +93,11 @@ export class ResponseSender {
 
     public async sendElement(el: BaseUIElement, ephemeral: boolean = false): Promise<string[]> {
         const previousLanguage = Locale.language.data
-        const targetLanguage = RoomSettingsTracker.settingsFor(this.roomId).language?.data
+        const targetLanguage = this.roomLanguage()
+        console.log("Room language is", targetLanguage)
         if (targetLanguage !== undefined) {
             Locale.language.setData(targetLanguage)
+           Translation.forcedLanguage = targetLanguage
         }
         const html: HTMLElement = el.ConstructElement()
         Locale.language.setData(previousLanguage)
@@ -110,7 +117,7 @@ export class ResponseSender {
         } while (htmlQueue.length > 0)
 
         if (allParts.length > 1 && !this.isDm()) {
-            this.sendNotice("Sorry, this message is too long for a public room - send me a direct message instead", false)
+            this.sendNotice(Translations.t.matrixbot.tooLongForPublic)
             return
         }
         let batch = "";
@@ -156,7 +163,7 @@ export class ResponseSender {
 
     public async sendHtml(msg, ephemeral: boolean = false): Promise<string> {
         if (msg.length > ResponseSender.MAX_LENGTH && !this.client.dms.isDm(this.roomId)) {
-            return await this.sendNotice("Sorry, this message is too long for a public room - send me a direct message instead", false)
+            return await this.sendNotice(Translations.t.matrixbot.tooLongForPublic)
         }
 
         if (msg.length > ResponseSender.MAX_LENGTH) {
@@ -171,19 +178,22 @@ export class ResponseSender {
         }), ephemeral)
     }
 
-    public async sendNotice(msg: string, ephemeral: false | boolean = false): Promise<string> {
-
+    public async sendNotice(msg: string | Translation, ephemeral: false | boolean = false): Promise<string> {
+        
         return await this.cleanPrevious(
             this.client.sendMessage(this.roomId, {
                 msgtype: "m.notice",
-                body: msg,
+                body: this.text(msg),
             }),
             ephemeral
         )
 
     }
 
-    text(translation: Translation): string | undefined {
+    text(translation: string | Translation): string | undefined {
+        if(typeof translation === "string"){
+            return translation
+        }
         return translation?.textFor(this.roomSettings().language.data);
     }
 

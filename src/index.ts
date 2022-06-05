@@ -25,6 +25,7 @@ import SearchCommand from "./commands/searchCommand";
 import {ResponseSender} from "./ResponseSender";
 import WelcomeCommand from "./commands/WelcomeCommand";
 import Wikicommand from "./commands/Wikicommand";
+import Translations from "../MapComplete/UI/i18n/Translations";
 
 
 /**
@@ -76,7 +77,7 @@ Utils.externalDownloadFunction = download;
 
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.2.0"
+    const version = "0.3.0"
     console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";
@@ -127,16 +128,15 @@ async function main(options: { accessToken?: string, username?: string, password
             return;
         }
         console.error(`Failed to decrypt ${roomId} ${event['event_id']} ${new Date(event.origin_server_ts ).toISOString()} (which is fresher then ${new Date(oneHourAgo).toISOString()}) because `, e);
-        await client.sendMessage(roomId, {
-            "msgtype": "m.notice",
-            "body": "Sorry, we don't support encryption yet",
-        })
+        const r = new ResponseSender(client, roomId, event.sender)
+        await r.sendNotice(Translations.t.matrixbot.decryptionFailed)
+       
     });
 
     client.on("room.joined", async (roomid, event) => {
         console.log("Joined room", roomid)
         const responseSender = new ResponseSender(client, roomid, undefined)
-        await new WelcomeCommand().RunCommand(responseSender, {_: ""})
+        await new WelcomeCommand().RunCommand(responseSender, <any> {_: ""})
     })
 
 

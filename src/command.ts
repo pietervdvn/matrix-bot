@@ -1,19 +1,21 @@
 import {RoomSettingsTracker} from "./RoomSettings";
 import {ResponseSender} from "./ResponseSender";
+import Translations from "../MapComplete/UI/i18n/Translations";
+import {Translation} from "../MapComplete/UI/i18n/Translation";
 
 export interface CommandOptions {
     adminOnly?: false | boolean
 }
 
-export abstract class Command<T> {
+export abstract class Command<T extends string> {
     public readonly cmd: string;
-    public readonly documentation: string;
-    public readonly args: T;
+    public readonly documentation: Translation;
+    public readonly args: Record<T, Translation | string>;
     public readonly options: CommandOptions;
 
-    constructor(cmd: string, documentation: string, args: T, options?: CommandOptions) {
+    constructor(cmd: string, documentation: string | Translation, args: Record<T, Translation | string>, options?: CommandOptions) {
         this.cmd = cmd;
-        this.documentation = documentation;
+        this.documentation = Translations.T(documentation);
         this.args = args;
         this.options = options;
         const rgx = /[a-z]+/;
@@ -47,11 +49,11 @@ export abstract class Command<T> {
 
     async RunCommand(r: ResponseSender, argsObj: T & { _: string }): Promise<string | undefined> {
         if (!this.mayExecute(r)) {
-            r.sendNotice("This command is only available to administrators or users who have this role")
+            r.sendNotice(Translations.t.matrixbot.noSufficientRights)
             return
         }
-        return this.Run(r, argsObj)
+        return this.Run(r, <any> argsObj)
     }
 
-    protected abstract Run(r: ResponseSender, args: T & { _: string }): Promise<any>;
+    protected abstract Run(r: ResponseSender, args: Record<T, string> & { _: string }): Promise<any>;
 }

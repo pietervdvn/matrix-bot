@@ -1,15 +1,14 @@
 import {Command} from "../command";
 import * as dreams from "./dreams.json"
 import {ResponseSender} from "../ResponseSender";
-import Combine from "../../MapComplete/UI/Base/Combine";
 
-export default class DreamCommand extends Command<{}> {
+export default class DreamCommand extends Command<""> {
 
     constructor() {
         super(
             "dream",
             "Sends a computer-generated text",
-            {}
+            {"":""}
         );
     }
 

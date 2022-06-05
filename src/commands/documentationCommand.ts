@@ -1,7 +1,5 @@
 import LayerConfig from "../../MapComplete/Models/ThemeConfig/LayerConfig";
-import LayoutConfig from "../../MapComplete/Models/ThemeConfig/LayoutConfig";
 import {AllKnownLayouts} from "../../MapComplete/Customizations/AllKnownLayouts";
-import Combine from "../../MapComplete/UI/Base/Combine";
 import Title from "../../MapComplete/UI/Base/Title";
 import {QueryParameters} from "../../MapComplete/Logic/Web/QueryParameters";
 import {ResponseSender} from "../ResponseSender";
@@ -12,7 +10,7 @@ import {Command} from "../command";
 import List from "../../MapComplete/UI/Base/List";
 import Constants from "../../MapComplete/Models/Constants";
 
-export class DocumentationCommand extends Command<{ id: string }> {
+export class DocumentationCommand extends Command<"id"> {
 
     constructor() {
         super("docs", "Gets documentation about a mapcomplete layer, theme or URL-parameter",
@@ -30,7 +28,7 @@ export class DocumentationCommand extends Command<{ id: string }> {
         }
     }
 
-    public async Run(r: ResponseSender, args: { id: string }): Promise<void> {
+    public async Run(r: ResponseSender, args: { id: string } & { _: string }): Promise<void> {
         args.id = args.id?.trim()
 
         if (args.id === undefined) {
@@ -69,7 +67,7 @@ export class DocumentationCommand extends Command<{ id: string }> {
 
     }
 
-    private async sendNothingFound(args: { id: string }, r: ResponseSender) {
+    private async sendNothingFound(args: { id: string } , r: ResponseSender) {
         const sorted = Utils.sortedByLevenshteinDistance(args.id, AllKnownLayouts.AllPublicLayers(), l => l.id).slice(0, 5)
         const sortedTheme = Utils.sortedByLevenshteinDistance(args.id, Array.from(AllKnownLayouts.allKnownLayouts.keys()), l => l).slice(0, 5)
         const qps = Object.keys(QueryParameters.documentation).slice(0,5);

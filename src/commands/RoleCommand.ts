@@ -6,7 +6,7 @@ import List from "../../MapComplete/UI/Base/List";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
 
-export class RoleCommand extends Command<{ verb: "list" | "add" | "remove" | "reset" | string, user: string, role: string | undefined }> {
+export class RoleCommand extends Command<"verb" | "user" | "role">{
 
     private _handler: MessageHandler;
 
@@ -23,7 +23,7 @@ export class RoleCommand extends Command<{ verb: "list" | "add" | "remove" | "re
     }
 
 
-    protected async Run(r: ResponseSender, args: { verb: "list" | "add" | "remove" | "reset" | string; user?: string; role: string | undefined } & { _: string }): Promise<any> {
+    protected async Run(r: ResponseSender, args: { verb: string; user: string | undefined; role: string | undefined } & { _: string }): Promise<any> {
         if (!(args.user?.trim().length > 0)) {
             await r.sendElements(
                     "This command can be used to change user roles. Current user roles are:",

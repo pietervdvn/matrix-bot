@@ -6,6 +6,7 @@ import SendMessageCommand from "./commands/sendMessageCommand";
 import {RoleCommand} from "./commands/RoleCommand";
 import {ResponseSender} from "./ResponseSender";
 import List from "../MapComplete/UI/Base/List";
+import Translations from "../MapComplete/UI/i18n/Translations";
 
 export interface MatrixMessage {
     "content": {
@@ -99,11 +100,9 @@ export class MessageHandler {
         const request = (body.trim().split(" ")[0] ?? "").toLowerCase()
         const command = this._commandsMap.get(request)
         if (command === undefined) {
-            const sorted = Utils.sortedByLevenshteinDistance(request, this._commands, c => c.cmd)
-            await r.sendElement(new Combine([
-                `I didn't understand your request. Did you perhaps mean to type ${sorted.slice(0, 2).map(cmd => cmd.cmd).join(", ")} or ${sorted[3].cmd}?`,
-                "<p>Type <code>help</code> to see an overview of all commands</p>"
-            ]).SetClass("flex flex-col"))
+            const sorted = <any> Utils.sortedByLevenshteinDistance(request, this._commands, c => c.cmd)
+            await r.sendElement(
+                Translations.t.matrixbot.commandNotFound.Subs(sorted))
             return;
         }
         const args = body.split(" ").slice(1)
@@ -120,7 +119,7 @@ export class MessageHandler {
         try {
             return await command.RunCommand(r, argsObj)
         } catch (e) {
-            const msg = "Sorry, something went wrong while executing command " + command.cmd
+            const msg = Translations.t.matrixbot.commandFailed.Subs(command);
             if (r.isAdmin) {
                 await r.sendElement(
                     new Combine([

@@ -7,9 +7,7 @@ import List from "../../MapComplete/UI/Base/List";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
 import * as scheme from "../../MapComplete/assets/layoutconfigmeta.json"
-export default class SchemeCommand extends Command<{
-    key: string,
-}> {
+export default class SchemeCommand extends Command<"key"> {
     constructor() {
         super("scheme", "Gives information about a key in a theme-config-file", {
             key: "The name of the key"

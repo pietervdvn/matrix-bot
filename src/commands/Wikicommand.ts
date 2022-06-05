@@ -5,13 +5,11 @@ import Combine from "../../MapComplete/UI/Base/Combine";
 import Link from "../../MapComplete/UI/Base/Link";
 import Title from "../../MapComplete/UI/Base/Title";
 import List from "../../MapComplete/UI/Base/List";
-import {Utils} from "../../MapComplete/Utils";
+import Translations from "../../MapComplete/UI/i18n/Translations";
 
-export default class Wikicommand extends Command<{
-    search: string
-}> {
+export default class Wikicommand extends Command<"search"> {
     constructor() {
-        super("wiki", "Prints (a part of) the specified page from wiki.osm.org. In public rooms, it'll print the first paragraph; in a DM the entire page will be sent.",
+        super("wiki", Translations.t.matrixbot.commands.wiki.docs,
             {
                 search: "The title of the page or the search term"
             });

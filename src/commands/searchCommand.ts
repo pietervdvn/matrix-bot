@@ -15,11 +15,7 @@ import {FeatureCollection} from "@turf/turf";
 import PresetConfig from "../../MapComplete/Models/ThemeConfig/PresetConfig";
 import {And} from "../../MapComplete/Logic/Tags/And";
 
-export default class SearchCommand extends Command<{
-    layerid: string,
-    verb: "in" | "near" | string,
-    _: string
-}> {
+export default class SearchCommand extends Command<    "layerid" | "verb" | "_"> {
 
     constructor() {
         super("search", "Searches for POI in or near a location", {

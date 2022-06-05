@@ -4,10 +4,7 @@ import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
 import List from "../../MapComplete/UI/Base/List";
 
-export default class SendMessageCommand extends Command<{
-    to: string,
-    _: string
-}> {
+export default class SendMessageCommand extends Command<    "to"|"_"> {
     private _executor: MessageHandler;
 
     constructor(executor: MessageHandler) {

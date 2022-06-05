@@ -2,7 +2,7 @@ import {Command} from "../command";
 import {ResponseSender} from "../ResponseSender";
 import {exec} from "child_process"
 
-export class QuitCommand extends Command<{ mode: "restart" | "shutdown" | string }> {
+export class QuitCommand extends Command<"mode"> {
 
     private static readonly inited = new Date()
 

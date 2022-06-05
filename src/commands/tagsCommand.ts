@@ -4,7 +4,7 @@ import {OsmObject} from "../../MapComplete/Logic/Osm/OsmObject";
 import {Geocoding} from "../../MapComplete/Logic/Osm/Geocoding";
 import {ResponseSender} from "../ResponseSender";
 
-export class TagsCommand extends Command<{ _: string }> {
+export class TagsCommand extends Command<"_"> {
 
     constructor() {
         super("tags", "Show the tags of an OSM-object. Either give an id OR a search string; the objects are interpreted and known values are shown.",

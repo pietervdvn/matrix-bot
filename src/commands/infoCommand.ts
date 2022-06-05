@@ -28,10 +28,9 @@ import {TagsCommand} from "./tagsCommand";
 import {Utils} from "../../MapComplete/Utils";
 import FeaturePipelineState from "../../MapComplete/Logic/State/FeaturePipelineState";
 import {DefaultGuiState} from "../../MapComplete/UI/DefaultGuiState";
-import ScriptUtils from "../../MapComplete/scripts/ScriptUtils";
 
 
-export class InfoCommand extends Command<{ _: string }> {
+export class InfoCommand extends Command<"_"> {
 
     private _countryCoder: CountryCoder;
 
