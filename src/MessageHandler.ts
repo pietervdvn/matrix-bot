@@ -100,7 +100,7 @@ export class MessageHandler {
         const request = (body.trim().split(" ")[0] ?? "").toLowerCase()
         const command = this._commandsMap.get(request)
         if (command === undefined) {
-            const sorted = <any> Utils.sortedByLevenshteinDistance(request, this._commands, c => c.cmd)
+            const sorted = <any> Utils.sortedByLevenshteinDistance(request, this._commands.map(c => c.cmd), c => c)
             await r.sendElement(
                 Translations.t.matrixbot.commandNotFound.Subs(sorted))
             return;
