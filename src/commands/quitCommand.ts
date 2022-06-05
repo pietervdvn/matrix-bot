@@ -7,7 +7,7 @@ export class QuitCommand extends Command<"mode"> {
     private static readonly inited = new Date()
 
     constructor() {
-        super("exit", "Shuts down the bot",
+        super("shutdown", "Shuts down the bot",
             {
                 mode: "Indicates if the service should be restarted, must be `shutdown`"
             },
@@ -30,7 +30,7 @@ export class QuitCommand extends Command<"mode"> {
             console.log("Received 'update' command, updating...")
             await r.sendNotice("Updating MapComplete...")
 
-            const process = exec("cd MapComplete && git stash && git pull && npm run generate:layeroverview", ((error, stdout, stderr) => {
+            const process = exec("cd MapComplete && git stash && git pull && npm run generate", ((error, stdout, stderr) => {
                 r.sendHtml("StdOut gave: <code>"+stdout+"</code>")
                 
                 if (error !== null) {

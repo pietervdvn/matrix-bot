@@ -94,7 +94,6 @@ export class ResponseSender {
     public async sendElement(el: BaseUIElement, ephemeral: boolean = false): Promise<string[]> {
         const previousLanguage = Locale.language.data
         const targetLanguage = this.roomLanguage()
-        console.log("Room language is", targetLanguage)
         if (targetLanguage !== undefined) {
             Locale.language.setData(targetLanguage)
            Translation.forcedLanguage = targetLanguage
