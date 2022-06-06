@@ -9,13 +9,15 @@ import BotUtils from "../Utils";
 import {Command} from "../command";
 import List from "../../MapComplete/UI/Base/List";
 import Constants from "../../MapComplete/Models/Constants";
+import Translations from "../../MapComplete/UI/i18n/Translations";
 
 export class DocumentationCommand extends Command<"id"> {
 
     constructor() {
-        super("docs", "Gets documentation about a mapcomplete layer, theme or URL-parameter",
+        const t = Translations.t.matrixbot.commands.documentation
+        super("docs", t.docs,
             {
-                "id": "The ID of the layer, theme or URL-parameter for which documentation is needed"
+                "id": t.argid
             }
         );
     }
@@ -30,16 +32,16 @@ export class DocumentationCommand extends Command<"id"> {
 
     public async Run(r: ResponseSender, args: { id: string } & { _: string }): Promise<void> {
         args.id = args.id?.trim()
+        const t = Translations.t.matrixbot.commands.documentation
 
         if (args.id === undefined) {
-            r.sendElements(
-                        "Give a layer id to get information about a layer. Known layers are:",
-                        new List(AllKnownLayouts.AllPublicLayers()
-                            .filter(l => Constants.priviliged_layers.indexOf(l.id) < 0 && l.source.geojsonSource === undefined)
-                            .map(l =>
-                                `<code>${l.id}</code> ${l.description?.txt ?? l.name?.txt ?? ""}`
-                            ))
-                )
+            r.sendElements(t.noIdIntro,
+                new List(AllKnownLayouts.AllPublicLayers()
+                    .filter(l => Constants.priviliged_layers.indexOf(l.id) < 0 && l.source.geojsonSource === undefined)
+                    .map(l =>
+                        `<code>${l.id}</code> ${l.description?.txt ?? l.name?.txt ?? ""}`
+                    ))
+            )
             return;
         }
         const th = AllKnownLayouts.allKnownLayouts.get(args.id)
@@ -58,28 +60,29 @@ export class DocumentationCommand extends Command<"id"> {
         const urlParamDoc = urlParamDocs[args.id];
         if (urlParamDoc !== undefined) {
             await r.sendElements(
-                    new Title("URL-parameter <code>" + args.id + "</code>"),
-                    BotUtils.MdToElement(urlParamDoc))
+                new Title(t.urlParam.Subs(args)),
+                BotUtils.MdToElement(urlParamDoc))
             return
         }
 
-        await this.sendNothingFound(args, r);
+        await DocumentationCommand.sendNothingFound(args, r);
 
     }
 
-    private async sendNothingFound(args: { id: string } , r: ResponseSender) {
+    private static async sendNothingFound(args: { id: string }, r: ResponseSender) {
+        const t = Translations.t.matrixbot.commands.documentation
         const sorted = Utils.sortedByLevenshteinDistance(args.id, AllKnownLayouts.AllPublicLayers(), l => l.id).slice(0, 5)
         const sortedTheme = Utils.sortedByLevenshteinDistance(args.id, Array.from(AllKnownLayouts.allKnownLayouts.keys()), l => l).slice(0, 5)
-        const qps = Object.keys(QueryParameters.documentation).slice(0,5);
+        const qps = Object.keys(QueryParameters.documentation).slice(0, 5);
         const sortedUrlParams = Utils.sortedByLevenshteinDistance(args.id, qps, qp => qp)
         await r.sendElements(
-            "No layer found with name <code>" + args.id + "</code>. Perhaps you meant one of: ",
+            t.noLayerFound.Subs(args),
             new List(sorted.map(l => `<code>${l.id}</code>`)),
-            "No theme found with name <code>" + args.id + "</code>. Perhaps you meant one of: ",
-            new List(sortedTheme.map(l => `<code>${l}</code>`)),
-            "No URL-parameter found with name <code>" + args.id + "</>. Perhaps you meant one of: ",
-            new List(sortedUrlParams.map(l => `<code>${l}</code>`))
+            t.noThemeFound.Subs(args),
 
+            new List(sortedTheme.map(l => `<code>${l}</code>`)),
+            t.noUrlParameterFound.Subs(args),
+            new List(sortedUrlParams.map(l => `<code>${l}</code>`))
         )
         return
     }

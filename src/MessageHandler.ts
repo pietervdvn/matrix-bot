@@ -55,6 +55,10 @@ export class MessageHandler {
     public hasCommand(request: string) {
         return this._commandsMap.has(request.toLowerCase());
     }
+    
+    public getCommand(cmd: string){
+        return this._commandsMap.get(cmd.toLowerCase())
+    }
 
     public removePrefix(body: string, isDm: boolean): string | undefined {
         if (body === undefined) {

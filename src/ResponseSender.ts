@@ -1,12 +1,13 @@
 import {MatrixClient} from "matrix-bot-sdk";
 import BaseUIElement from "../MapComplete/UI/BaseUIElement";
 import Locale from "../MapComplete/UI/i18n/Locale";
-import {RoomSettings, RoomSettingsTracker} from "./RoomSettings";
+import {RoomSettingsTracker} from "./RoomSettings";
 import {Translation} from "../MapComplete/UI/i18n/Translation";
 import Combine from "../MapComplete/UI/Base/Combine";
 import Translations from "../MapComplete/UI/i18n/Translations";
 import Link from "../MapComplete/UI/Base/Link";
 import LinkToWeblate from "../MapComplete/UI/Base/LinkToWeblate";
+import {UIEventSource} from "../MapComplete/Logic/UIEventSource";
 
 export class ResponseSender {
     public client: MatrixClient;
@@ -148,12 +149,16 @@ export class ResponseSender {
         return eventIds;
     }
 
-    public roomSettings(): RoomSettings | undefined {
+    public roomSettings() : UIEventSource<Map<string, Set<string>>>{
         return RoomSettingsTracker.settingsFor(this.roomId)
     }
     
     public roomLanguage(): string {
-        return RoomSettingsTracker.settingsFor(this.roomId)?.language?.data ?? "en"
+        const languages =RoomSettingsTracker.settingsFor(this.roomId)?.data?.get("language")
+        if(languages === undefined || languages.size == 0){
+            return "en"
+        }
+        return  Array.from(languages)[0]
     }
     
     public sleep(ms: number): Promise<void>{
@@ -195,7 +200,7 @@ export class ResponseSender {
         if(typeof translation === "string"){
             return translation
         }
-        return translation?.textFor(this.roomSettings().language.data);
+        return translation?.textFor(this.roomLanguage());
     }
 
     isDm() {

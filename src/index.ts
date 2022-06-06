@@ -16,7 +16,7 @@ import {SetLanguageCommand} from "./commands/SetLanguageCommand";
 import DreamCommand from "./commands/dreamCommand";
 import {HelpCommand} from "./commands/helpCommand";
 import {InfoCommand} from "./commands/infoCommand";
-import {QuitCommand} from "./commands/quitCommand";
+import {ShutdownCommand} from "./commands/shutdownCommand";
 import {TagsCommand} from "./commands/tagsCommand";
 import SchemeCommand from "./commands/schemeCommand";
 import {DocumentationCommand} from "./commands/documentationCommand";
@@ -77,7 +77,7 @@ Utils.externalDownloadFunction = download;
 
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.3.1"
+    const version = "0.3.2"
     console.log("Starting matrix bot "+version)
 
     const homeserverUrl = "https://matrix.org";
@@ -111,7 +111,7 @@ async function main(options: { accessToken?: string, username?: string, password
         new SetLanguageCommand(),
         new SchemeCommand(),
         new DreamCommand(),
-        new QuitCommand()
+        new ShutdownCommand()
     ]
     allCommands.push(new HelpCommand(version, allCommands))
     const handler = new MessageHandler(client, allCommands)

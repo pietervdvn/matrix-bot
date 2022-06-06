@@ -31,8 +31,12 @@ export class HelpCommand extends Command<"cmd"> {
         if (args.cmd !== undefined) {
             const cmd: Command<any> = this._allCommands.filter(c => c.cmd === args.cmd)[0]
             if (cmd === undefined) {
-                const closest = Utils.sortedByLevenshteinDistance(args.cmd, this._allCommands, c => c.cmd).slice(0, 3)
-                await r.sendHtml("I didn't find <code>" + args.cmd + "</code>. Perhaps you meant one of " + closest.map(c => "`" + c.cmd + "`").join(", ") + "?")
+                const closest = 
+                    Utils.sortedByLevenshteinDistance(args.cmd, this._allCommands.map(c => c.cmd), c => c)
+                        .slice(0, 3)
+                        .map(cmd => "<code>"+cmd+"</code>")
+                        .join(", ")
+                await r.sendElement(t.notFound.Subs({...args, closest}))
                 return
             }
 

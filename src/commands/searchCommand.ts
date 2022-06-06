@@ -76,7 +76,7 @@ export default class SearchCommand extends Command<    "layerid" | "verb" | "_">
         }
 
 
-        const layer = SearchCommand.findMatchingLayer(layerId, r.roomSettings()?.language?.data ?? "en");
+        const layer = SearchCommand.findMatchingLayer(layerId, r.roomLanguage());
         if (layer === undefined) {
             await r.sendNotice("I didn't find a matching layer")
             return

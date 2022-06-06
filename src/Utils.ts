@@ -5,7 +5,10 @@ export default class BotUtils{
     /**
      * Converts `username` into `@username:matrix.org` if needed
      */
-    public  static asUserId(targetName: string): string{
+    public  static asUserId(targetName: string | undefined): string | undefined{
+        if(targetName === undefined){
+            return undefined
+        }
         if(!targetName.startsWith("@")){
             targetName = "@"+targetName
         }

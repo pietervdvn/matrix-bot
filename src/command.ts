@@ -44,7 +44,7 @@ export abstract class Command<T extends string> {
      * new QuitCommand().mayExecute(admin) // => true
      */
     public mayExecute(r: ResponseSender): boolean{
-      return (!this.options?.adminOnly) || r.isAdmin || (RoomSettingsTracker.roles.get(r.sender)?.has(this.cmd) ?? false)
+      return (!this.options?.adminOnly) || r.isAdmin || (RoomSettingsTracker.allRoles().get(r.sender)?.has(this.cmd) ?? false)
     }
 
     async RunCommand(r: ResponseSender, argsObj: T & { _: string }): Promise<string | undefined> {

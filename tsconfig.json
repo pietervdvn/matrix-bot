@@ -15,6 +15,7 @@
     ]
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "MapComplete/scripts/downloadFile.ts"
   ]
 }

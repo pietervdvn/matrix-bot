@@ -5,17 +5,70 @@ import {Command} from "../command";
 import List from "../../MapComplete/UI/Base/List";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
+import Translations from "../../MapComplete/UI/i18n/Translations";
+import {VerbHandler} from "./verbHandler";
 
-export class RoleCommand extends Command<"verb" | "user" | "role">{
+export class RoleCommand extends Command<"verb" | "user" | "role"> {
 
     private _handler: MessageHandler;
 
+    private static verbs = new VerbHandler<{ user: string, role?: string }, void>()
+        .AddDefault("List the roles of the user",
+            async (r, {user}) => RoleCommand.listRolesOf(r, user)
+        )
+        .Add("reset", "Revokes all rights of a user",
+            async (r, {user}) => {
+                const t = Translations.t.matrixbot.commands.role
+                if(user === "@pietervdvn:matrix.org"){
+                    await r.sendNotice("Nope, not resetting pietervdvn")
+                    return
+                }
+                RoomSettingsTracker.UpdateRoles(user, roles => roles?.clear())
+                await r.sendHtml(t.allRevoked.Subs({user}))
+            }
+        )
+        .Add("add", "Adds a role to the specified user",
+            async (r, {user, role}) => {
+                RoomSettingsTracker.UpdateRoles(user, roles => roles.add(role))
+                await RoleCommand.listRolesOf(r, user)
+            })
+        .Add("list", "List all the user roles of the specified user",
+            async (r, {user}) => RoleCommand.listRolesOf(r, user)
+        )
+        .Add("remove", "Removes a role from the specified uer",
+            async (r, {user, role}) => {
+                const t = Translations.t.matrixbot.commands.role
+                let roles = RoomSettingsTracker.rolesOfUser(user)
+                if (roles.length === 0) {
+                    await r.sendNotice(t.noPreviousRoles.Subs({user}))
+                    return
+                }
+                RoomSettingsTracker.UpdateRoles(user,roles => roles.delete(role))
+                await RoleCommand.listRolesOf(r, user)
+            }
+        )
+
+    private static async listRolesOf(r: ResponseSender, user?: string) {
+        const t = Translations.t.matrixbot.commands.role
+        user = user ?? r.sender
+        const roles = RoomSettingsTracker.rolesOfUser(user)
+        if (roles.length === 0) {
+            await r.sendHtml(t.noRolesYet.Subs({user}))
+        } else {
+            await r.sendElements(
+                t.userHasRoles.Subs({user}),
+                new List(roles)
+            )
+        }
+    }
+
     constructor(handler: MessageHandler) {
-        super("roles", "Change what a user can or cannot do",
+        const t = Translations.t.matrixbot.commands.role
+        super("roles", t.docs,
             {
-                verb: "Wether to <code>add</code> or <code>remove</code> a role from a user. Use <code>list</code> to see all roles a user has",
-                user: "Whom to change roles for",
-                role: "Which role to add; must be a command name"
+                verb: t.argverb,
+                user: t.arguser,
+                role: t.argrole
             },
             {adminOnly: true}
         );
@@ -24,61 +77,34 @@ export class RoleCommand extends Command<"verb" | "user" | "role">{
 
 
     protected async Run(r: ResponseSender, args: { verb: string; user: string | undefined; role: string | undefined } & { _: string }): Promise<any> {
+        const t = Translations.t.matrixbot.commands.role
         if (!(args.user?.trim().length > 0)) {
             await r.sendElements(
-                    "This command can be used to change user roles. Current user roles are:",
-                    new Table(["User", "Roles"],
-                        Array.from(RoomSettingsTracker.roles.entries()).map(
-                            ([key, value]) => [key, new List(Array.from(value))])
-                    )
+                t.allRolesIntro,
+                new Table(["User", "Roles"],
+                    Array.from(RoomSettingsTracker.allRoles().entries()).map(
+                        ([key, value]) => [key, new List(Array.from(value))])
+                )
             )
             return
         }
+
         const user = BotUtils.asUserId(args.user)
-        let roles = RoomSettingsTracker.roles.get(user)
-
-        if (args.verb === "reset") {
-            roles?.clear()
-            await r.sendNotice("All rights of " + user + " have been revoked")
-            return
-        }
-        if (!(args.role?.trim().length > 0)) {
-            await r.sendNotice("Please, specify a role")
-            return
-        }
-
         const role = args.role?.trim()?.toLowerCase()
-        if(args.verb === "remove" || args.verb === "add"){
-            if (!this._handler.hasCommand(role)) {
-                await r.sendNotice("No such role: " + role + "; this must be a command name")
-                return;
-            }
+        if (role !== undefined && !this._handler.hasCommand(role)) {
+            await r.sendNotice(t.noSuchRole.Subs({role, user}))
+            return;
         }
 
-        if (args.verb === "remove") {
-            if (roles === undefined) {
-                await r.sendNotice("This user didn't have any previous roles")
-                return
-            }
-            roles.delete(args.role)
+        if (!this._handler.getCommand(role).options.adminOnly) {
+            await r.sendNotice(t.noRightsNeeded.Subs({role}))
+            return;
         }
+        
 
-        if (args.verb === "add") {
-            if (roles === undefined) {
-                roles = new Set<string>();
-                RoomSettingsTracker.roles.set(user, roles)
-            }
-            roles.add(args.role)
-        }
+        RoleCommand.verbs.Exec(args.verb, r, {user, role})
 
-        if (roles === undefined || roles.size === 0) {
-            await r.sendHtml("User " + user + " has no roles yet")
-        } else {
-            await r.sendElements(
-                "User " + user + " has the following roles",
-                new List(Array.from(roles))
-            )
-        }
+
     }
 
 }

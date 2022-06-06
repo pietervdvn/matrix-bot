@@ -46,9 +46,9 @@ export class InfoCommand extends Command<"_"> {
     private static fallbackMappings(tags: any, requestRedraw: () => Promise<void>):
         Map<string, BaseUIElement | ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)> {
         const r = new Map<string, BaseUIElement |  ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)>();
-
+const t=  Translations.t.matrixbot.commands.info;
         {
-            let ohViz: BaseUIElement = new FixedUiElement("No opening hours are known.")
+            let ohViz: BaseUIElement = t.noOpeningHours;
             let ohSpec = tags["opening_hours"]
             if (ohSpec !== undefined) {
 
@@ -65,7 +65,7 @@ export class InfoCommand extends Command<"_"> {
                     sunday.setTime(monday.getTime() + 7 * 24 * 60 * 60 * 1000)
                     const ranges = OH.GetRanges(oh, monday, sunday)
                     if (ranges.length === 0) {
-                        ohViz = new FixedUiElement("Closed today and tomorrow")
+                        ohViz = t.closedTodayAndTomorrow
                     } else {
                         const weekdaysTr = Translations.t.general.weekdays
                         const weekdays = {
@@ -86,7 +86,7 @@ export class InfoCommand extends Command<"_"> {
                                             return "<bold>" + r.comment + "</bold>"
                                         }
                                         if (!r.isOpen) {
-                                            return "<bold>closed</bold>"
+                                            return "<bold>"+t.closed+"</bold>"
                                         }
                                         const strt = r.startDate;
                                         const end = r.endDate
@@ -165,9 +165,10 @@ export class InfoCommand extends Command<"_"> {
 
 
     public async Run(r: ResponseSender, args: {  _: string }): Promise<void> {
+        const t=  Translations.t.matrixbot.commands.info;
         let id = args._.trim();
         if (id === null || id === undefined || id === "") {
-            await r.sendNotice("Please, provide a search term of id to use this command")
+            await r.sendNotice(t.provideSearch)
             return
         }
         const matched = id.match(/(https:\/\/|http:\/\/)?(www\.)?(osm.org|openstreetmap.org)\/(node|way|relation)\/([0-9]+)/)
@@ -179,10 +180,10 @@ export class InfoCommand extends Command<"_"> {
 
         const matchedSimple = id.match(/(node|way|relation)\/([0-9]+)/)
         if (matchedSimple !== null) {
-            await r.sendNotice(`Fetching data about ${id}...`, true)
+            await r.sendNotice(t.fetchingInfoAbout.Subs({id}), true)
             const obj = await OsmObject.DownloadObjectAsync(id);
             if (obj === undefined) {
-                await r.sendHtml(`Could not download <code>${id}</code>`);
+                await r.sendHtml(t.couldNotDownload.Subs({id}));
                 return;
             }
             const geojson = obj.asGeoJson();
@@ -190,16 +191,16 @@ export class InfoCommand extends Command<"_"> {
             return;
         }
 
-        await r.sendHtml("<code>" + id + "</code> doesn't seem to be a valid OSM-id - searching worldwide instead for " + args._, true)
+        await r.sendHtml(t.searchingWorldwide.Subs(args), true)
         const geocoded = await Geocoding.Search(args._)
         if ((geocoded?.length ?? 0) === 0) {
-            await r.sendHtml("Nothing found for " + args._)
+            await r.sendHtml(t.nothingFound.Subs(args))
             return;
         }
 
 
         await r.sendElementsEphemeral(
-                `Found ${geocoded.length} results for <code>${args._}</code>, fetching details about them...`,
+                t.foundResults.Subs({total: geocoded.length, search: args._}),
                 new Table([],
                     geocoded.map(r => [new Link(r.osm_type + "/" + r.osm_id, "https://osm.org/" + r.osm_type + "/" + r.osm_id, true), new FixedUiElement(r.display_name)])
                 )
@@ -229,6 +230,7 @@ export class InfoCommand extends Command<"_"> {
     }
 
     private static render(geojson, layers: LayerConfig[], requestRedraw: () => Promise<void>): BaseUIElement {
+        const t = Translations.t.matrixbot.commands.info
         function r(tr: TagRenderingConfig) {
             if (tr === undefined) {
                 return undefined;
@@ -294,11 +296,11 @@ export class InfoCommand extends Command<"_"> {
             editButton = new Combine(
                 themes.filter(th => !th.hideFromOverview).map(th => 
                     new Link(
-                        new Title("Edit this element with "+th.title.txt ,5),
+                        new Title(t.editWith.Subs(th) ,5),
                         `https://mapcomplete.osm.be/${th.id}.html?z=17&lon=${lon}&lat=${lat}#${geojson.properties.id}`, true))
             )
         } else {
-            editButton = "No mapcomplete themes support this element"
+            editButton = t.noEditPossible
         }
 
         const props = geojson.properties
@@ -309,7 +311,7 @@ export class InfoCommand extends Command<"_"> {
                 ...layers[0].titleIcons.map(icon => icon.GetRenderValue(props)?.Subs(props)),
 
             ])),
-            results.length > 0 ? new Combine(results) : "No relevant information yet",
+            results.length > 0 ? new Combine(results) : t.noInfo,
             editButton
         ])
     }
