@@ -10,7 +10,7 @@ export class ShutdownCommand extends Command<"mode"> {
     private static readonly inited = new Date()
 
 
-    private static verbs = new VerbHandler()
+    private static verbs = new VerbHandler<any, "shutdown">()
         .Add("shutdown", Translations.t.matrixbot.commands.shutdown.verbshutdown, ShutdownCommand.shutdown)
         .Add("update",Translations.t.matrixbot.commands.shutdown.verbupdate, ShutdownCommand.update)
 
@@ -67,8 +67,7 @@ export class ShutdownCommand extends Command<"mode"> {
             return;
         }
 
-        ShutdownCommand.verbs.Exec(args.mode, r, undefined)
-
+        return ShutdownCommand.verbs.Exec(args.mode, r, undefined)
     }
 
 
