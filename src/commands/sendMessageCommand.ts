@@ -3,15 +3,17 @@ import {Command} from "../command";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
 import List from "../../MapComplete/UI/Base/List";
+import Translations from "../../MapComplete/UI/i18n/Translations";
 
-export default class SendMessageCommand extends Command<    "to"|"_"> {
+export default class SendMessageCommand extends Command<"to" | "_"> {
     private _executor: MessageHandler;
 
     constructor(executor: MessageHandler) {
-        super("dm", "Executes a command and send the output to someone else",
+        const t = Translations.t.matrixbot.commands.dm
+        super("dm", t.docs,
             {
-                to: "The ID of whom to send the output to",
-                _: "The actual command body of the command"
+                to: t.argto,
+                _: t.argbody
             }, {
                 adminOnly: true
             });
@@ -19,24 +21,25 @@ export default class SendMessageCommand extends Command<    "to"|"_"> {
     }
 
     protected async Run(r: ResponseSender, args: { to: string; _: string } & { _: string }): Promise<string | undefined> {
+        const t = Translations.t.matrixbot.commands.dm
 
         if (args.to === undefined || args.to.trim() === "") {
-            await r.sendNotice("Specify a valid target user");
+            await r.sendNotice(t.selectValidUser);
             return;
         }
 
         if ((args._ ?? "")?.trim() === "") {
-            await r.sendNotice("Specify a valid command");
+            await r.sendNotice(t.selectValidCommand);
             return
         }
 
         const key = this._executor.removePrefix(args._, true).split(" ")[0]
         if (!this._executor.hasCommand(key)) {
-            await r.sendNotice("Command " + key + " not found - see <code>help</code> for all commands");
+            await r.sendNotice(t.commandNotFound.Subs({key}));
             return
         }
 
-        await r.sendHtml(`Executing <code>${args._}</code> and sending the result to <b>${args.to}</b>...`, true)
+        await r.sendElement(t.executing.Subs(args), true)
         try {
             let targetName = BotUtils.asUserId(args.to)
 
@@ -44,17 +47,17 @@ export default class SendMessageCommand extends Command<    "to"|"_"> {
             const targetSender = new ResponseSender(r.client, dm, r.sender)
 
             if (dm === undefined) {
-                await r.sendNotice("I couldn't create a room with " + args.to);
+                await r.sendNotice(t.noDm.Subs(args));
                 return
             }
 
             const result = await this._executor.executeCommand(args._, targetSender);
-            await targetSender.sendHtml(`I sent you this message because <b>${r.sender}</b> requested me to send this with <code>${args._}</code>`)
-            await r.sendNotice("I delivered the message to " + targetName)
+            await targetSender.sendElement(t.sendReason.Subs({sender: r.sender, cmd: args._}))
+            await r.sendNotice( t.receipt.Subs(args))
             return result
         } catch (e) {
             await r.sendElements(
-                "I couldn't execute <code>" + args._ + "</code> due to " + e.message,
+                t.failed.Subs({cmd: args._,message: e.message}),
                 new List(e.stack.split("\n")))
         }
     }

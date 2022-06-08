@@ -7,47 +7,56 @@ import Title from "../../MapComplete/UI/Base/Title";
 import List from "../../MapComplete/UI/Base/List";
 import Translations from "../../MapComplete/UI/i18n/Translations";
 
-export default class Wikicommand extends Command<"search"> {
-    constructor() {
-        super("wiki", Translations.t.matrixbot.commands.wiki.docs,
+export default class Wikicommand extends Command<"_"> {
+    private _command: string;
+    private _provider: ((language: string) => Wikipedia);
+    private _exactMatchCandidates: (search: string, language: string) => string[];
+    constructor(command: string, provider: ((language: string) => Wikipedia),
+                exactMatchCandidates: ((search: string, language: string) => string[])) {
+       
+        const t = Translations.t.matrixbot.commands.wiki
+        super(command, t.docs.Subs(provider("en")),
             {
-                search: "The title of the page or the search term"
+                _: t.argsearch
             });
+        this._command = command;
+        this._provider = provider;
+        this._exactMatchCandidates = exactMatchCandidates;
 
 
     }
 
-    protected async Run(r: ResponseSender, args: { search: string } & { _: string }): Promise<any> {
+    protected async Run(r: ResponseSender, rawArgs:{ _: string }): Promise<any> {
+        const t = Translations.t.matrixbot.commands.wiki
+        const args = {search : rawArgs._} // Yeah, this is a bit a cheat
+        
         if ((args.search ?? "") == "") {
-            await r.sendNotice("Please, specify a wiki page to search for")
+            await r.sendNotice(t.noWiki)
             return;
         }
-        const wikipedia = new Wikipedia({backend: "wiki.openstreetmap.org"})
-        await r.sendNotice(`Searching wiki.osm.org...`, true)
-        const [searchResults, searchResultLanguage] =  await Promise.all([ await wikipedia.searchViaIndex(args.search),await wikipedia.searchViaIndex(r.roomLanguage()+":"+ args.search)])
+        const wikipedia = this._provider(r.roomLanguage())
+        await r.sendNotice(t.searching.Subs(wikipedia), true)
+        const [searchResults, searchResultLanguage] = await Promise.all([await wikipedia.searchViaIndex(args.search), await wikipedia.searchViaIndex(r.roomLanguage() + ":" + args.search)])
 
         const seenTitles = new Set<string>(searchResults.map(sr => sr.title));
         searchResults.push(...searchResultLanguage.filter(sr => !seenTitles.has(sr.title)))
-        
+
         if (searchResults.length == 0) {
-            await r.sendNotice("I couldn't find anything on wiki.osm.org for " + args.search);
+            await r.sendNotice(t.nothingFound.Subs({backend: wikipedia.backend, ...args}));
             return;
         }
 
-        const searchCandidates = [args.search, "tag:"+args.search, "key:"+args.search,
-            r.roomLanguage()+":"+args.search,
-            r.roomLanguage()+":tag:"+args.search,
-            r.roomLanguage()+":key:"+args.search
-        ].map(candidate => candidate.toLowerCase())
+        const searchCandidates = this._exactMatchCandidates(args.search, r.roomLanguage())
+            .map(candidate => candidate.toLowerCase())
         const exactMatches = searchResults.filter(searchResult => searchCandidates.some(candidate => candidate === searchResult.title.toLowerCase()));
-        const exactMatchesWithLanguage = exactMatches.find(em => em.title.toLowerCase().startsWith(r.roomLanguage()+":"))
-        if(exactMatches.length > 0){
-            await r.sendNotice("Found a matching wiki page: "+(exactMatchesWithLanguage ?? exactMatches[0]).title, true)
-        }else if (searchResults.length > 1 ) {
-            await r.sendElements(`Got ${searchResults.length} results for search query <code>${args.search}</code>:`, new List(
+        const exactMatchesWithLanguage = exactMatches.find(em => em.title.toLowerCase().startsWith(r.roomLanguage() + ":"))
+        if (exactMatches.length > 0) {
+            await r.sendNotice(t.foundMatching.Subs((exactMatchesWithLanguage ?? exactMatches[0])), true)
+        } else if (searchResults.length > 1) {
+            await r.sendElements(t.gotResults.Subs({count: searchResults.length, search: args.search}), new List(
                 searchResults.map(r => new Combine([
-                    new Link( "<b>" + r.title + "</b>", r.url),
-                    "..."+r.snippet+"..."]), !r.isDm())
+                    new Link("<b>" + r.title + "</b>", r.url),
+                    "..." + r.snippet + "..."]), !r.isDm())
             ))
         }
 
@@ -58,11 +67,11 @@ export default class Wikicommand extends Command<"search"> {
         });
         if (paragraph == undefined && !r.isDm()) {
             // If no match found and in a public room: don't send the notice as the list of elements will be removed otherwise
-            await r.sendHtml("Sorry, the page <code>"+pagename+"</code> could not be loaded")
+            await r.sendElement(t.loadingFailed.Subs({pagename}))
             return
         }
         await r.sendElement(new Combine([
-           new Link( new Title(decodeURIComponent( page.title)), page.url, true),
+            new Link(new Title(decodeURIComponent(page.title)), page.url, true),
             "<p>" + paragraph + "</p>",
         ]))
 

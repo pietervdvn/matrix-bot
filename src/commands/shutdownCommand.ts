@@ -11,8 +11,8 @@ export class ShutdownCommand extends Command<"mode"> {
 
 
     private static verbs = new VerbHandler()
-        .Add("shutdown", "Shuts down the bot", ShutdownCommand.shutdown)
-        .Add("update","Attempts to update the embedded MapComplete-codebase, shuts down afterwards", ShutdownCommand.update)
+        .Add("shutdown", Translations.t.matrixbot.commands.shutdown.verbshutdown, ShutdownCommand.shutdown)
+        .Add("update",Translations.t.matrixbot.commands.shutdown.verbupdate, ShutdownCommand.update)
 
     constructor() {
         const t = Translations.t.matrixbot.commands.shutdown

@@ -14,14 +14,16 @@ import Link from "../../MapComplete/UI/Base/Link";
 import {FeatureCollection} from "@turf/turf";
 import PresetConfig from "../../MapComplete/Models/ThemeConfig/PresetConfig";
 import {And} from "../../MapComplete/Logic/Tags/And";
+import Translations from "../../MapComplete/UI/i18n/Translations";
 
 export default class SearchCommand extends Command<    "layerid" | "verb" | "_"> {
 
     constructor() {
-        super("search", "Searches for POI in or near a location", {
-            layerid: "The name of a layer OR a single search term",
-            verb: "Either search in a geographical area (e.g. a city) or search near a POI",
-            _: "The search term"
+        const t=  Translations.t.matrixbot.commands.search
+        super("search",t.docs , {
+            layerid: t.arglayerid,
+            verb: t.argverb,
+            _: t.argsearch
         });
     }
 
@@ -56,7 +58,8 @@ export default class SearchCommand extends Command<    "layerid" | "verb" | "_">
     }
 
     protected async Run(r: ResponseSender, args: { layerid: string; verb: "in" | "near" | string; _: string } & { _: string }): Promise<any> {
-
+const t=  Translations.t.matrixbot.commands.search
+        
         // This is a bit a special command: we parse the arguments again
         const argsRaw = [args.layerid, args.verb, args._].join(" ")
         let mode: "in" | "near"
@@ -69,26 +72,25 @@ export default class SearchCommand extends Command<    "layerid" | "verb" | "_">
             [layerId, search] = argsRaw.split(" in ")
             mode = "in"
         } else {
-            await r.sendHtml(`<p>Sorry, I didn't understand your command as I didn't find a <code>near</code> or <code>in</code> in your search query.
- Try something as <code>search drinking water in London</code>, <code>search friture in Brussels</code></p>
- <p>Alternatively, try <code>info ${[args.layerid, args.verb, args._].join(" ").trim()}</code> to get info about a single object</p>`)
+            const cmd =[args.layerid, args.verb, args._].join(" ").trim()
+            await r.sendElements(t.noNearOrIn.Subs({cmd}))
             return;
         }
 
 
         const layer = SearchCommand.findMatchingLayer(layerId, r.roomLanguage());
         if (layer === undefined) {
-            await r.sendNotice("I didn't find a matching layer")
+            await r.sendNotice(t.noMatchingLayer)
             return
         }
 
         const overpass = new Overpass(new And(layer.preset?.tags ?? [layer.config.source.osmTags]), [], Constants.defaultOverpassUrls[1]);
 
         const layerTitle = r.text(layer.preset?.title ?? layer.config.name)
-        await r.sendHtml(`Searching ${layerTitle} ${mode} <code>${search}</code>...`, true)
+        await r.sendElement(t.searching.Subs({layerTitle, mode, search}), true)
         const geocodedEntries = await Geocoding.Search(search)
         if (geocodedEntries.length === 0) {
-            await r.sendNotice("Sorry, I couldn't find anything for <code>" + search + "</code>, so I can't search for " + layerTitle)
+            await r.sendNotice(t.nothingFound.Subs({search, layerTitle}))
             return
         }
         if (mode === "in") {
@@ -124,7 +126,8 @@ export default class SearchCommand extends Command<    "layerid" | "verb" | "_">
     }
 
     private async SendInfoAbout(r: ResponseSender, geojsons: FeatureCollection, layer: LayerConfig, centerpoint: { lon: number, lat: number }): Promise<void> {
-        const theme = AllKnownLayouts.themesUsingLayer(layer.id)[0]
+       const t=  Translations.t.matrixbot.commands.search
+         const theme = AllKnownLayouts.themesUsingLayer(layer.id)[0]
 
         const feats = geojsons.features.map(geojson => {
             const distance = GeoOperations.distanceBetween(GeoOperations.centerpointCoordinates(geojson), [centerpoint.lon, centerpoint.lat])
@@ -140,9 +143,10 @@ export default class SearchCommand extends Command<    "layerid" | "verb" | "_">
         })
 
         feats.sort((f0, f1) => f0.distance - f1.distance);
+        const cutoff = 25
 
         const items = new List(
-            feats.slice(0, 25).map(feat => {
+            feats.slice(0, cutoff).map(feat => {
                 const props = feat.geojson.properties
                 const title = r.text(layer.title.GetRenderValue(props).Subs(props));
                 return new Combine([
@@ -152,9 +156,10 @@ export default class SearchCommand extends Command<    "layerid" | "verb" | "_">
                     " (" + feat.humanDistance + " away)"
                 ]);
             }));
+        const href=  `https://mapcomplete.osm.be/${theme.id}?lat=${centerpoint.lat}&lon=${centerpoint.lon}&z=15`
         await r.sendElements(
-                    "I found " + feats.length + " matching items.",
-                    feats.length > 25 ? `<p><i>I'm only showing the 25 items closest to the <a href='https://mapcomplete.osm.be/${theme.id}?lat=${centerpoint.lat}&lon=${centerpoint.lon}&z=15' target='_blank'>searched location</a>.</i></p>`: undefined,
+            t.overview.Subs(feats),
+                    feats.length > cutoff ? t.announceLimited.Subs({cutoff, href}): undefined,
                     items
             )
     }

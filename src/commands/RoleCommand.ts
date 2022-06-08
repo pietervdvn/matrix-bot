@@ -13,10 +13,10 @@ export class RoleCommand extends Command<"verb" | "user" | "role"> {
     private _handler: MessageHandler;
 
     private static verbs = new VerbHandler<{ user: string, role?: string }, void>()
-        .AddDefault("List the roles of the user",
+        .AddDefault(Translations.t.matrixbot.commands.role.verbdefault,
             async (r, {user}) => RoleCommand.listRolesOf(r, user)
         )
-        .Add("reset", "Revokes all rights of a user",
+        .Add("reset", Translations.t.matrixbot.commands.role.verbrevoke,
             async (r, {user}) => {
                 const t = Translations.t.matrixbot.commands.role
                 if(user === "@pietervdvn:matrix.org"){
@@ -24,18 +24,18 @@ export class RoleCommand extends Command<"verb" | "user" | "role"> {
                     return
                 }
                 RoomSettingsTracker.UpdateRoles(user, roles => roles?.clear())
-                await r.sendHtml(t.allRevoked.Subs({user}))
+                await r.sendElement(t.allRevoked.Subs({user}))
             }
         )
-        .Add("add", "Adds a role to the specified user",
+        .Add("add",Translations.t.matrixbot.commands.role.verbadd ,
             async (r, {user, role}) => {
                 RoomSettingsTracker.UpdateRoles(user, roles => roles.add(role))
                 await RoleCommand.listRolesOf(r, user)
             })
-        .Add("list", "List all the user roles of the specified user",
+        .Add("list", Translations.t.matrixbot.commands.role.verblist,
             async (r, {user}) => RoleCommand.listRolesOf(r, user)
         )
-        .Add("remove", "Removes a role from the specified uer",
+        .Add("remove", Translations.t.matrixbot.commands.role.verbremove,
             async (r, {user, role}) => {
                 const t = Translations.t.matrixbot.commands.role
                 let roles = RoomSettingsTracker.rolesOfUser(user)
@@ -53,11 +53,11 @@ export class RoleCommand extends Command<"verb" | "user" | "role"> {
         user = user ?? r.sender
         const roles = RoomSettingsTracker.rolesOfUser(user)
         if (roles.length === 0) {
-            await r.sendHtml(t.noRolesYet.Subs({user}))
+            await r.sendElement(t.noRolesYet.Subs({user}))
         } else {
             await r.sendElements(
                 t.userHasRoles.Subs({user}),
-                new List(roles)
+                roles.join(", ")
             )
         }
     }

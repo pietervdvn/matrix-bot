@@ -6,7 +6,7 @@ import Translations from "../../MapComplete/UI/i18n/Translations";
 export default class WelcomeCommand extends Command<""> {
 
     constructor() {
-        super("welcome", "Gives a friendly welcome message", {"":""});
+        super("welcome", Translations.t.matrixbot.commands.welcome.docs, {"":""});
     }
 
     protected async Run(r: ResponseSender, args: { _: string }): Promise<void> {

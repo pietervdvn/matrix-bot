@@ -26,11 +26,12 @@ import {ResponseSender} from "./ResponseSender";
 import WelcomeCommand from "./commands/WelcomeCommand";
 import Wikicommand from "./commands/Wikicommand";
 import Translations from "../MapComplete/UI/i18n/Translations";
+import Wikipedia from "../MapComplete/Logic/Web/Wikipedia";
 
 
 /**
  * Injected into 'Utils'
- * 
+ *
  * const html = await download("https://example.org")
  * html["content"].startsWith("<!doctype html>") // => true
  */
@@ -59,7 +60,7 @@ async function download(url, headers?: any) {
                 });
 
                 res.addListener('end', function () {
-                    if(res.statusCode === 302){
+                    if (res.statusCode === 302) {
                         resolve({redirect: res.headers["location"]})
                         return
                     }
@@ -75,10 +76,9 @@ async function download(url, headers?: any) {
 Utils.externalDownloadFunction = download;
 
 
-
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.3.2"
-    console.log("Starting matrix bot "+version)
+    const version = "0.4.0"
+    console.log("Starting matrix bot " + version)
 
     const homeserverUrl = "https://matrix.org";
     if (options.accessToken === undefined) {
@@ -87,7 +87,7 @@ async function main(options: { accessToken?: string, username?: string, password
         let cl = await auth.passwordLogin(options.username, options.password);
         options.accessToken = await cl.accessToken
         console.log("Login successfull, creating a new login with the access token " + (await cl.accessToken))
-        if(!existsSync("./storage")){
+        if (!existsSync("./storage")) {
             mkdirSync("./storage");
         }
         writeFileSync("./storage/access_token.json", options.accessToken, "utf8")
@@ -102,12 +102,21 @@ async function main(options: { accessToken?: string, username?: string, password
     AutojoinRoomsMixin.setupOnClient(client);
     const countrycoder = new CountryCoder(Constants.countryCoderEndpoint, Utils.downloadJson);
 
-    let allCommands: Command<any>[] = [
+    const wosm = new Wikipedia({backend: "wiki.openstreetmap.org"})
+    const allCommands: Command<any>[] = [
         new InfoCommand(countrycoder),
         new SearchCommand(),
         new TagsCommand(),
         new DocumentationCommand(),
-        new Wikicommand(),
+        new Wikicommand("wiki", _ => wosm,
+            (search, language) => [
+                search, "tag:" + search, "key:" + search,
+                language + ":" + search,
+                language + ":tag:" + search,
+                language + ":key:" + search
+            ]),
+        new Wikicommand("wikipedia", language => new Wikipedia({language}),
+            (search) => [search]),
         new SetLanguageCommand(),
         new SchemeCommand(),
         new DreamCommand(),
@@ -118,25 +127,25 @@ async function main(options: { accessToken?: string, username?: string, password
 
     client.on("room.failed_decryption", async (roomId: string, event: MatrixMessage, e: Error) => {
         const oneHourAgo = (new Date().getTime()) - (60 * 1000);
-        if(event.origin_server_ts < oneHourAgo) {
+        if (event.origin_server_ts < oneHourAgo) {
             console.log("Skip old unencryptable message...")
             // This message is older then one hour - we ignore it
             return;
         }
-        if(event.sender === await client.getUserId()){
+        if (event.sender === await client.getUserId()) {
             // We shouldn't send messages back to ourselves
             return;
         }
-        console.error(`Failed to decrypt ${roomId} ${event['event_id']} ${new Date(event.origin_server_ts ).toISOString()} (which is fresher then ${new Date(oneHourAgo).toISOString()}) because `, e);
+        console.error(`Failed to decrypt ${roomId} ${event['event_id']} ${new Date(event.origin_server_ts).toISOString()} (which is fresher then ${new Date(oneHourAgo).toISOString()}) because `, e);
         const r = new ResponseSender(client, roomId, event.sender)
         await r.sendNotice(Translations.t.matrixbot.decryptionFailed)
-       
+
     });
 
     client.on("room.joined", async (roomid, event) => {
         console.log("Joined room", roomid)
         const responseSender = new ResponseSender(client, roomid, undefined)
-        await new WelcomeCommand().RunCommand(responseSender, <any> {_: ""})
+        await new WelcomeCommand().RunCommand(responseSender, <any>{_: ""})
     })
 
 
@@ -177,13 +186,13 @@ if (fakedom === undefined || window === undefined) {
 
 
 const [command, username, password] = process.argv.slice(2)
-if(process.argv[1].endsWith("mocha")){
+if (process.argv[1].endsWith("mocha")) {
     console.log("Argv[1] ends with mocha, assuming test environment; not starting the bot")
-}else if(existsSync("./storage/access_token.json")){
-   const accessToken : string = readFileSync("./storage/access_token.json", "utf8")
+} else if (existsSync("./storage/access_token.json")) {
+    const accessToken: string = readFileSync("./storage/access_token.json", "utf8")
     console.log("Loaded access token from disk")
-   main({accessToken}) 
-}else if (command === "--password") {
+    main({accessToken})
+} else if (command === "--password") {
     mainSync({password, username})
 } else {
     mainSync({accessToken: command});

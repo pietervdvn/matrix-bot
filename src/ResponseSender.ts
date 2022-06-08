@@ -167,7 +167,7 @@ export class ResponseSender {
         });
     }
 
-    public async sendHtml(msg, ephemeral: boolean = false): Promise<string> {
+    public async sendHtml(msg: string, ephemeral: boolean = false): Promise<string> {
         if (msg.length > ResponseSender.MAX_LENGTH && !this.client.dms.isDm(this.roomId)) {
             return await this.sendNotice(Translations.t.matrixbot.tooLongForPublic)
         }

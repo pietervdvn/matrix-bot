@@ -35,9 +35,10 @@ export class InfoCommand extends Command<"_"> {
     private _countryCoder: CountryCoder;
 
     constructor(countryCoder: CountryCoder) {
-        super("info", "Gets info about an OSM-object. Either give an id OR a search string; the objects are interpreted and known values are shown.",
+        const t = Translations.t.matrixbot.commands.info
+        super("info", t.docs,
             {
-                "_": "The ID of the OSM-object or a search query"
+                "_": t.argsearch
             }
         );
         this._countryCoder = countryCoder;
@@ -183,7 +184,7 @@ const t=  Translations.t.matrixbot.commands.info;
             await r.sendNotice(t.fetchingInfoAbout.Subs({id}), true)
             const obj = await OsmObject.DownloadObjectAsync(id);
             if (obj === undefined) {
-                await r.sendHtml(t.couldNotDownload.Subs({id}));
+                await r.sendElement(t.couldNotDownload.Subs({id}));
                 return;
             }
             const geojson = obj.asGeoJson();
@@ -191,10 +192,10 @@ const t=  Translations.t.matrixbot.commands.info;
             return;
         }
 
-        await r.sendHtml(t.searchingWorldwide.Subs(args), true)
+        await r.sendElement(t.searchingWorldwide.Subs(args), true)
         const geocoded = await Geocoding.Search(args._)
         if ((geocoded?.length ?? 0) === 0) {
-            await r.sendHtml(t.nothingFound.Subs(args))
+            await r.sendElement(t.nothingFound.Subs(args))
             return;
         }
 

@@ -7,14 +7,17 @@ import List from "../../MapComplete/UI/Base/List";
 import BotUtils from "../Utils";
 import {ResponseSender} from "../ResponseSender";
 import * as scheme from "../../MapComplete/assets/layoutconfigmeta.json"
+import Translations from "../../MapComplete/UI/i18n/Translations";
 export default class SchemeCommand extends Command<"key"> {
     constructor() {
-        super("scheme", "Gives information about a key in a theme-config-file", {
-            key: "The name of the key"
+        const t = Translations.t.matrixbot.commands.scheme;
+        super("scheme", t.docs, {
+            key: t.argkey
         }, {});
     }
 
     private static SchemeInfo(requestedKey: string): BaseUIElement[] {
+        const t = Translations.t.matrixbot.commands.scheme;
         const r: BaseUIElement[] = []
         const allKeys: string[] = [];
         const sch :{path: string[], type?: string,typeHint?: string, description?: string}[] = scheme["default"] ?? scheme
@@ -25,7 +28,10 @@ export default class SchemeCommand extends Command<"key"> {
                 continue;
             }
             r.push(new Combine([
-                new Title(`${key} (Used at <code>${item.path.join(".")}</code>, ${item.typeHint ?? item.type ?? "no type specificied"})`, 3),
+                new Title(t.title.Subs({
+                    key, path: item.path.join("."),
+                    type: item.typeHint ?? item.type ?? t.notype
+                }), 3),
                 BotUtils.MdToElement(item.description)
             ]).SetClass("flex flex-col"))
         }
@@ -33,7 +39,7 @@ export default class SchemeCommand extends Command<"key"> {
       
         if (r.length == 0) {
             const matches = Utils.sortedByLevenshteinDistance(requestedKey, allKeys, key => key).slice(0, 5)
-            r.push(new Combine(["No matching keys found, maybe you meant one of:", new List(matches)]))
+            r.push(new Combine([t.noMatchingLayer, new List(matches)]))
         }
 
         return r;

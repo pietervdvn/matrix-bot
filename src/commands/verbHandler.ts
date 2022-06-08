@@ -1,18 +1,19 @@
 import {ResponseSender} from "../ResponseSender";
 import Translations from "../../MapComplete/UI/i18n/Translations";
+import {Translation} from "../../MapComplete/UI/i18n/Translation";
 
 export class VerbHandler<T, R> {
 
-    private readonly verbs: [string, string, (responseHandler: ResponseSender, t: T) => Promise<R>][] = []
+    private readonly verbs: [string, Translation, (responseHandler: ResponseSender, t: T) => Promise<R>][] = []
     private _onNotFound: (verb: string, r: ResponseSender, t: T) => Promise<R>;
     private _onNoVerb: (r: ResponseSender, t: T) => Promise<R>;
-    private _onNoVerbDoc: string;
+    private _onNoVerbDoc: Translation;
 
     constructor(onNotFound: (verb: string, r: ResponseSender, t: T) => Promise<R> = undefined) {
         this._onNotFound = onNotFound ??
             (async (verb, r, _) => {
                 const known_verbs = this.verbs.map(v => "<code>" + v[0] + "</code>").join(", ")
-                await r.sendHtml(Translations.t.matrixbot.subcommanNotFound.Subs({
+                await r.sendElement(Translations.t.matrixbot.subcommanNotFound.Subs({
                     verb,
                     known_verbs
                 }))
@@ -28,7 +29,7 @@ export class VerbHandler<T, R> {
         })
     }
 
-    public Add(name: string, doc: string, action: (responseSender: ResponseSender, t: T) => Promise<R>): VerbHandler<T, R> {
+    public Add(name: string, doc: Translation, action: (responseSender: ResponseSender, t: T) => Promise<R>): VerbHandler<T, R> {
         this.verbs.push([<any>name, doc, action])
         return this;
     }
@@ -54,7 +55,7 @@ export class VerbHandler<T, R> {
      * This serves as a fallback
      * @constructor
      */
-    public AddDefault(doc: string, action: (responseSender: ResponseSender, t: T) => Promise<R>) {
+    public AddDefault(doc: Translation, action: (responseSender: ResponseSender, t: T) => Promise<R>) {
         this._onNoVerbDoc = doc;
         this._onNoVerb = action
         return this
