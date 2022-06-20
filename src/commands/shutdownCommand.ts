@@ -39,7 +39,7 @@ export class ShutdownCommand extends Command<"mode"> {
             }
             if (stderr !== "") {
                 console.error(stderr)
-                r.sendHtml("Updating gave an error (via StdErr): <code>" + stderr + "</code>")
+                r.sendHtml("The following output came via StdErr: <code>" + stderr + "</code>This does not mean that updating has failed, as these might be errors")
             }
             process.on("exit", () => r.sendHtml("All done"))
         }))

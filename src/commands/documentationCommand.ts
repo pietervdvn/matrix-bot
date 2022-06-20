@@ -122,53 +122,62 @@ class DocumentationListing extends Listing {
             if (stats.isDirectory()) {
                 continue;
             }
-            const element = BotUtils.MdToElement(readFileSync(fullEntry, "utf8"))
-            const key = entry.substring(0, entry.length - 3).toLowerCase()
-            originalFileNames.set(key, entry)
-            const currentQueue: Record<number, BaseUIElement[]> = {}
-            const currentId: Record<number, string> = {}
-            const maxDepth = 4
-            for (const child of Array.from(element.ConstructElement().children)) {
-                const tag = child.tagName.match("H([0-9]+)")
-                if (tag) {
-                    const depth = Number(tag[1])
-                    // Flush all elements of deeper or equal depth
-                    for (let i = depth; i < maxDepth; i++) {
-                        const els = currentQueue[i]
-                        if (els === undefined) {
-                            continue
-                        }
-                        docs.set(key + "#" + currentId[i], new Combine(els))
-                        sectionDepths.set(key + "#" + currentId[i], i)
-                        currentQueue[i] = undefined
-                    }
-                    if (depth < maxDepth) {
-                        currentQueue[depth] = [new FixedUiElement(child.outerHTML)]
-                        currentId[depth] = child.innerHTML.trim().replace(/[ ]/g, '-').replace(/[?.+]/g, '').toLowerCase()
-                    }
-                    continue
-                }
-
-                for (let i = 1; i < maxDepth; i++) {
-                    currentQueue[i]?.push(new FixedUiElement(child.outerHTML))
-                }
-
+            try {
+                DocumentationListing.loadFile(fullEntry, entry, originalFileNames, docs, sectionDepths);
+            } catch (e) {
+                console.error("Could not parse " + entry + " due to " + e)
             }
-
-            for (let i = 1; i < maxDepth; i++) {
-                const els = currentQueue[i]
-                if (els === undefined) {
-                    continue
-                }
-                docs.set(key + "#" + currentId[i], new Combine(els))
-                sectionDepths.set(key + "#" + currentId[i], i)
-            }
-
-            docs.set(key, element)
         }
         super("file", docs);
         this.originalFileNames = originalFileNames;
         this.sectionDepths = sectionDepths
+    }
+
+    private static loadFile(fullEntry: string, entry: string, originalFileNames: Map<string, string>, docs: Map<string, BaseUIElement>, sectionDepths: Map<string, number>) {
+        const element = BotUtils.MdToElement(readFileSync(fullEntry, "utf8"))
+        const key = entry.substring(0, entry.length - 3).toLowerCase()
+        originalFileNames.set(key, entry)
+        const currentQueue: Record<number, BaseUIElement[]> = {}
+        const currentId: Record<number, string> = {}
+        const maxDepth = 4
+        console.log("Generating the entries for " + key + "." + entry)
+        for (const child of Array.from(element.ConstructElement().children)) {
+            const tag = child.tagName.match("H([0-9]+)")
+            if (tag) {
+                const depth = Number(tag[1])
+                // Flush all elements of deeper or equal depth
+                for (let i = depth; i < maxDepth; i++) {
+                    const els = currentQueue[i]
+                    if (els === undefined) {
+                        continue
+                    }
+                    docs.set(key + "#" + currentId[i], new Combine(els))
+                    sectionDepths.set(key + "#" + currentId[i], i)
+                    currentQueue[i] = undefined
+                }
+                if (depth < maxDepth) {
+                    currentQueue[depth] = [new FixedUiElement(child.outerHTML)]
+                    currentId[depth] = child.innerHTML.trim().replace(/[ ]/g, '-').replace(/[?.+]/g, '').toLowerCase()
+                }
+                continue
+            }
+
+            for (let i = 1; i < maxDepth; i++) {
+                currentQueue[i]?.push(new FixedUiElement(child.outerHTML))
+            }
+
+        }
+
+        for (let i = 1; i < maxDepth; i++) {
+            const els = currentQueue[i]
+            if (els === undefined) {
+                continue
+            }
+            docs.set(key + "#" + currentId[i], new Combine(els))
+            sectionDepths.set(key + "#" + currentId[i], i)
+        }
+
+        docs.set(key, element)
     }
 
     renderKeys(): BaseUIElement[] {
@@ -246,7 +255,7 @@ export class DocumentationCommand extends Command<"id"> {
         const t = Translations.t.matrixbot.commands.documentation
 
         if (args.id === undefined) {
-            r.sendElements(t.noIdIntro.Subs({list: DocumentationCommand.listings.map(l => l.translations.singular).join(", ")})            )
+            r.sendElements(t.noIdIntro.Subs({list: DocumentationCommand.listings.map(l => l.translations.singular).join(", ")}))
             return;
         }
 
