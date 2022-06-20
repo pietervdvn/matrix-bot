@@ -43,7 +43,7 @@ export class ShutdownCommand extends Command<"mode"> {
             }
             process.on("exit", () => r.sendHtml("All done"))
         }))
-        return await this.shutdown(r)
+        return await ShutdownCommand.shutdown(r)
     }
 
     private static async shutdown(r: ResponseSender): Promise<"shutdown"> {
