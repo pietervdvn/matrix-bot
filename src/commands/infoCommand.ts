@@ -28,6 +28,7 @@ import {TagsCommand} from "./tagsCommand";
 import {Utils} from "../../MapComplete/Utils";
 import FeaturePipelineState from "../../MapComplete/Logic/State/FeaturePipelineState";
 import {DefaultGuiState} from "../../MapComplete/UI/DefaultGuiState";
+import Locale from "../../MapComplete/UI/i18n/Locale";
 
 
 export class InfoCommand extends Command<"_"> {
@@ -232,7 +233,7 @@ const t=  Translations.t.matrixbot.commands.info;
 
     private static render(geojson, layers: LayerConfig[], requestRedraw: () => Promise<void>): BaseUIElement {
         const t = Translations.t.matrixbot.commands.info
-        function r(tr: TagRenderingConfig) {
+        function r(tr: TagRenderingConfig) : BaseUIElement{
             if (tr === undefined) {
                 return undefined;
             }
@@ -345,6 +346,7 @@ const t=  Translations.t.matrixbot.commands.info;
                 previousIds.push(...newElements)
                 await r.sleep(100)
             }
+            Locale.language.setData(r.roomLanguage())
             element = InfoCommand.render(geojson, layers, sendElement)
             sendElement()
             

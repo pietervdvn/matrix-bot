@@ -7,6 +7,7 @@ import {RoleCommand} from "./commands/RoleCommand";
 import {ResponseSender} from "./ResponseSender";
 import List from "../MapComplete/UI/Base/List";
 import Translations from "../MapComplete/UI/i18n/Translations";
+import Locale from "../MapComplete/UI/i18n/Locale";
 
 export interface MatrixMessage {
     "content": {
@@ -121,15 +122,17 @@ export class MessageHandler {
         }
         argsObj["_"] = (args.slice(i).join(" "));
         try {
+            Locale.language.setData(r.roomLanguage())
             return await command.RunCommand(r, argsObj)
         } catch (e) {
+            console.log("Error: ", e)
             const msg = Translations.t.matrixbot.commandFailed.Subs(command);
             if (r.isAdmin) {
                 await r.sendElement(
                     new Combine([
                         msg,
                         "<p>The error is <code>"+e.message+"</code></p>",
-                      new List(  JSON.stringify(e.stack).split("\\n"))
+                      new List(  JSON.stringify(e.stack)?.split("\\n") ?? ["No stack trace"])
                     ]))
             } else {
                 await r.sendNotice(msg)
