@@ -122,15 +122,18 @@ const t=  Translations.t.matrixbot.commands.info;
                 const wikidatas: string[] =
                     Utils.NoEmpty(values?.split(";")?.map(wd => wd.trim()) ?? [])
 
+                const currentState =  new UIEventSource<"loading" | "loaded" | "error">("loading")
+                currentState.addCallbackAndRun(state => {
+                        if(state === "loaded"){
+                            requestRedraw().catch(e => console.error(e))
+                        }
+                    })
+                
                 return new Table([],
                     [[new WikipediaBox(wikidatas, {
                     addHeader: true,
                     firstParagraphOnly: true,
-                    currentState: new UIEventSource<"loading" | "loaded" | "error">("loading").addCallbackAndRun(state => {
-                        if(state === "loaded"){
-                            requestRedraw().catch(e => console.error(e))
-                        }
-                    }),
+                    currentState,
                     noImages: true
                 })]]);
             }

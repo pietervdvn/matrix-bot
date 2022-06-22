@@ -16,7 +16,7 @@ export class FileBackedEventSource {
     }
     
     public ParsedEventSourceForFile(key: string): UIEventSource<Map<string, Set<string>>> {
-        return this.EventSourceForFile(key).map(
+        return this.EventSourceForFile(key).sync(
             str => {
                 const dict = new Map<string, Set<string>>()
                 if(str === undefined || str === ""){
