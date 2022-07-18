@@ -58,7 +58,7 @@ export default class SendMessageCommand extends Command<"to" | "_"> {
         } catch (e) {
             await r.sendElements(
                 t.failed.Subs({cmd: args._,message: e.message}),
-                new List(e.stack.split("\n")))
+                new List(e.stack?.split("\n") ?? "No stack trace provided"))
         }
     }
 
