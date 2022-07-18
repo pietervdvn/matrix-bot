@@ -259,23 +259,25 @@ export class DocumentationCommand extends Command<"id"> {
             return;
         }
 
+        let foundSomething = false;
         for (const listing of DocumentationCommand.listings) {
             if (listing.key === args.id || args.id.toLowerCase() === listing.translations.singular.textFor(r.roomLanguage()) || args.id.toLowerCase() === listing.translations.plural.textFor(r.roomLanguage())) {
                 await r.sendElements(
                     t.overview.Subs(listing.translations),
                     new List(listing.renderKeys())
                 )
-                return
-            }
-            const found = listing.search(args.id)
-            if (found === undefined) {
+                foundSomething = true;
                 continue
             }
-            await r.sendElements(found)
-            return
+            const found = listing.search(args.id)
+            if (found !== undefined) {
+                await r.sendElements(found)
+                foundSomething = true;
+            }
         }
-
-        await DocumentationCommand.sendNothingFound(args, r);
+        if (!foundSomething) {
+            await DocumentationCommand.sendNothingFound(args, r);
+        }
 
     }
 

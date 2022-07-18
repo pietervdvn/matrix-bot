@@ -77,7 +77,7 @@ Utils.externalDownloadFunction = download;
 
 
 async function main(options: { accessToken?: string, username?: string, password?: string }) {
-    const version = "0.4.1"
+    const version = "0.4.2"
     console.log("Starting matrix bot " + version)
 
     const homeserverUrl = "https://matrix.org";
@@ -166,7 +166,7 @@ async function main(options: { accessToken?: string, username?: string, password
         await client.start();
         console.log("Started! This bot is called ", await client.getUserId())
     } catch (e) {
-        console.error("Starting bot failed...")
+        console.error("Starting bot failed due to ", e)
     }
 }
 
@@ -185,7 +185,8 @@ if (fakedom === undefined || window === undefined) {
 }
 
 
-const [command, username, password] = process.argv.slice(2)
+const [command, username, password] = process.argv.slice(2).map(s => s.trim())
+console.log("Command is ", command, username, "*******")
 if (process.argv[1].endsWith("mocha")) {
     console.log("Argv[1] ends with mocha, assuming test environment; not starting the bot")
 } else if (existsSync("./storage/access_token.json")) {
@@ -193,7 +194,12 @@ if (process.argv[1].endsWith("mocha")) {
     console.log("Loaded access token from disk")
     main({accessToken})
 } else if (command === "--password") {
+    console.log("Attempting to log in as user ", username)
     mainSync({password, username})
-} else {
+} else if(command?.length > 0){
     mainSync({accessToken: command});
+}else{
+    console.log("No access token or password given via the command line")
+   // const author = prompt("What is the author for artwork " + path + "? (or: [Q]uit, [S]kip)  > ")
+
 }

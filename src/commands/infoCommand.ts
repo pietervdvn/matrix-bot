@@ -47,8 +47,8 @@ export class InfoCommand extends Command<"_"> {
 
     private static fallbackMappings(tags: any, requestRedraw: () => Promise<void>):
         Map<string, BaseUIElement | ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)> {
-        const r = new Map<string, BaseUIElement |  ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)>();
-const t=  Translations.t.matrixbot.commands.info;
+        const r = new Map<string, BaseUIElement | ((state: FeaturePipelineState, tagSource: UIEventSource<any>, argument: string[], guistate: DefaultGuiState) => BaseUIElement)>();
+        const t = Translations.t.matrixbot.commands.info;
         {
             let ohViz: BaseUIElement = t.noOpeningHours;
             let ohSpec = tags["opening_hours"]
@@ -88,7 +88,7 @@ const t=  Translations.t.matrixbot.commands.info;
                                             return "<bold>" + r.comment + "</bold>"
                                         }
                                         if (!r.isOpen) {
-                                            return "<bold>"+t.closed+"</bold>"
+                                            return "<bold>" + t.closed + "</bold>"
                                         }
                                         const strt = r.startDate;
                                         const end = r.endDate
@@ -109,38 +109,37 @@ const t=  Translations.t.matrixbot.commands.info;
         r.set("image_carousel", undefined)
         r.set("nearby_images", undefined)
         r.set("images", undefined)
-        
-        { r.set("wikipedia",
 
-            (_, __, args, ___) => {
+        {
+            r.set("wikipedia",
 
-                const keys = (args[0] ?? "wikidata;wikipedia").split(";").map(k => k.trim())
-                const values = keys.map(key => tags[key])[0]
-                if(values == undefined || values == ""){
-                    r.set("wikipedia",undefined)
-                }
-                const wikidatas: string[] =
-                    Utils.NoEmpty(values?.split(";")?.map(wd => wd.trim()) ?? [])
+                (_, __, args, ___) => {
 
-                const currentState =  new UIEventSource<"loading" | "loaded" | "error">("loading")
-                currentState.addCallbackAndRun(state => {
-                        if(state === "loaded"){
+                    const keys = (args[0] ?? "wikidata;wikipedia").split(";").map(k => k.trim())
+                    const values = keys.map(key => tags[key])[0]
+                    if (values == undefined || values == "") {
+                        r.set("wikipedia", undefined)
+                    }
+                    const wikidatas: string[] =
+                        Utils.NoEmpty(values?.split(";")?.map(wd => wd.trim()) ?? [])
+
+                    const currentState = new UIEventSource<"loading" | "loaded" | "error">("loading")
+                    currentState.addCallbackAndRun(state => {
+                        if (state === "loaded") {
                             requestRedraw().catch(e => console.error(e))
                         }
                     })
-                
-                return new Table([],
-                    [[new WikipediaBox(wikidatas, {
-                    addHeader: true,
-                    firstParagraphOnly: true,
-                    currentState,
-                    noImages: true
-                })]]);
-            }
-            
-            
+
+                    return new Table([],
+                        [[new WikipediaBox(wikidatas, {
+                            addHeader: true,
+                            firstParagraphOnly: true,
+                            currentState,
+                            noImages: true
+                        })]]);
+                }
             )
-           
+
         }
 
         return r
@@ -169,8 +168,8 @@ const t=  Translations.t.matrixbot.commands.info;
     }
 
 
-    public async Run(r: ResponseSender, args: {  _: string }): Promise<void> {
-        const t=  Translations.t.matrixbot.commands.info;
+    public async Run(r: ResponseSender, args: { _: string }): Promise<void> {
+        const t = Translations.t.matrixbot.commands.info;
         let id = args._.trim();
         if (id === null || id === undefined || id === "") {
             await r.sendNotice(t.provideSearch)
@@ -180,7 +179,7 @@ const t=  Translations.t.matrixbot.commands.info;
         if (matched !== null) {
             const type = matched[4]
             const n = matched[5]
-            id = type+"/"+n;
+            id = type + "/" + n;
         }
 
         const matchedSimple = id.match(/(node|way|relation)\/([0-9]+)/)
@@ -205,10 +204,10 @@ const t=  Translations.t.matrixbot.commands.info;
 
 
         await r.sendElementsEphemeral(
-                t.foundResults.Subs({total: geocoded.length, search: args._}),
-                new Table([],
-                    geocoded.map(r => [new Link(r.osm_type + "/" + r.osm_id, "https://osm.org/" + r.osm_type + "/" + r.osm_id, true), new FixedUiElement(r.display_name)])
-                )
+            t.foundResults.Subs({total: geocoded.length, search: args._}),
+            new Table([],
+                geocoded.map(r => [new Link(r.osm_type + "/" + r.osm_id, "https://osm.org/" + r.osm_type + "/" + r.osm_id, true), new FixedUiElement(r.display_name)])
+            )
         )
 
 
@@ -236,12 +235,13 @@ const t=  Translations.t.matrixbot.commands.info;
 
     private static render(geojson, layers: LayerConfig[], requestRedraw: () => Promise<void>): BaseUIElement {
         const t = Translations.t.matrixbot.commands.info
-        function r(tr: TagRenderingConfig) : BaseUIElement{
+
+        function r(tr: TagRenderingConfig): BaseUIElement {
             if (tr === undefined) {
                 return undefined;
             }
-            return new SubstitutedTranslation(tr.GetRenderValue(geojson.properties), 
-                new UIEventSource<any>(geojson.properties), 
+            return new SubstitutedTranslation(tr.GetRenderValue(geojson.properties),
+                new UIEventSource<any>(geojson.properties),
                 undefined,
                 InfoCommand.fallbackMappings(geojson.properties, requestRedraw)
             )
@@ -288,7 +288,7 @@ const t=  Translations.t.matrixbot.commands.info;
 
         const baselayer = layers.find(l => l.title !== undefined)
 
-        const themes: LayoutConfig[] =Array.from( new Set(
+        const themes: LayoutConfig[] = Array.from(new Set(
             [].concat(
                 ...layers.map(l => AllKnownLayouts.themesUsingLayer(l.id, true))
             )
@@ -299,9 +299,9 @@ const t=  Translations.t.matrixbot.commands.info;
 
             const [lon, lat] = GeoOperations.centerpointCoordinates(geojson)
             editButton = new Combine(
-                themes.filter(th => !th.hideFromOverview).map(th => 
+                themes.filter(th => !th.hideFromOverview).map(th =>
                     new Link(
-                        new Title(t.editWith.Subs(th) ,5),
+                        new Title(t.editWith.Subs(th), 5),
                         `https://mapcomplete.osm.be/${th.id}.html?z=17&lon=${lon}&lat=${lat}#${geojson.properties.id}`, true))
             )
         } else {
@@ -330,29 +330,31 @@ const t=  Translations.t.matrixbot.commands.info;
                 await r.sendElement(new AllTagsPanel(new UIEventSource(geojson.properties)))
                 return;
             }
-            
+
             const [lon, lat] = GeoOperations.centerpointCoordinates(geojson)
 
             const countries = await this._countryCoder.GetCountryCodeAsync(lon, lat)
             geojson.properties["_country"] = countries[0].toLowerCase()
-            let element : BaseUIElement = undefined;
+            let element: BaseUIElement = undefined;
             let previousIds: string[] = []
+
             async function sendElement(): Promise<void> {
-                if(element === undefined){
+                if (element === undefined) {
                     return
                 }
-      
+
                 const newElements = await r.sendElement(element)
-                while(previousIds.length > 0){
+                while (previousIds.length > 0) {
                     await r.client.redactEvent(r.roomId, previousIds.shift())
                 }
                 previousIds.push(...newElements)
                 await r.sleep(100)
             }
+
             Locale.language.setData(r.roomLanguage())
             element = InfoCommand.render(geojson, layers, sendElement)
             sendElement()
-            
+
         } catch (e) {
             console.log(e.toString())
         }
