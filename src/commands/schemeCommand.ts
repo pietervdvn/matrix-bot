@@ -84,6 +84,13 @@ export default class SchemeCommand extends Command<"key"> {
             } else {
                 const {key, type, description} = locations[0]
                 const allPaths = locations.map(l => "<code>" + l.path + "</code>");
+                let locationsMsg: string | BaseUIElement =  "This key is used on " + allPaths.length + " locations";
+                if(locations.length < 20){
+                    locationsMsg = new Combine([
+                        "This key is used on multiple locations: ",
+                        locations.length > 10 ? allPaths.join(", ") : new List(allPaths)
+                    ]).SetClass("flex flex-col")
+                }
                 r.push(new Combine([
                     new Title(t.title.Subs({
                         key,
@@ -91,10 +98,7 @@ export default class SchemeCommand extends Command<"key"> {
                         type
                     }), 3),
                     BotUtils.MdToElement(description),
-                    locations.length < 20 ?
-                        ("This key is used on multiple locations: " ?
-                            locations.length > 10 ? allPaths.join(", ") : new List(allPaths)) :
-                        "This key is used on " + allPaths.length + " locations"
+                    locationsMsg
                 ]).SetClass("flex flex-col"))
             }
         })
