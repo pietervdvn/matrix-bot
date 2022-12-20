@@ -28,7 +28,7 @@
     "https": "^1.0.0",
     "js-yaml": "^4.1.0",
     "latlon2country": "^1.2.6",
-    "matrix-bot-sdk": "^0.6.1",
+    "matrix-bot-sdk": "^0.6.3",
     "mocha": "^10.0.0",
     "osmtogeojson": "^3.0.0-beta.4",
     "showdown": "^2.1.0",
