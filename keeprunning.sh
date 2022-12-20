@@ -1,10 +1,11 @@
 #! /bin/bash
-
+DATE=`date --iso-8601`
+LOGFILE=log-$DATE.txt
 while : 
 do
-  git pull >> log.txt
-  echo "RESTARTING:" >> log.txt
-  date >> log.txt
-  ts-node src/index.ts >> log.txt 2>&1 
+  git pull >> "$LOGFILE"
+  echo "RESTARTING:" >> "$LOGFILE"
+  date >> "$LOGFILE"
+  ts-node src/index.ts >> "$LOGFILE" 2>&1 
   sleep 5
 done
